@@ -1,0 +1,9 @@
+# VSCode
+.vscode
+
+# Objects
+objs
+
+# Libs
+*.a
+*.so
