@@ -7,3 +7,4 @@ objs
 # Libs
 *.a
 *.so
+test_bin

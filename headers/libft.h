@@ -6,7 +6,7 @@
 /*   By: agruet <agruet@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/12 10:54:10 by agruet            #+#    #+#             */
-/*   Updated: 2026/03/20 19:03:22 by agruet           ###   ########.fr       */
+/*   Updated: 2026/03/27 15:43:52 by agruet           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -205,37 +205,6 @@ void	ft_addmap(t_map **map, t_map *new);
 void	ft_mapclear(t_map **map);
 void	map_remove_node(t_map **map, t_map *node);
 size_t	ft_mapsize(t_map *map);
-
-// arena
-# define CHUNK_SIZE 4194304
-
-typedef struct s_chunk	t_chunk;
-
-struct s_chunk
-{
-	t_chunk		*next;
-	size_t		count;
-	size_t		capacity;
-	uintptr_t	data[];
-};
-
-typedef struct s_arena
-{
-	t_chunk	*begin;
-	t_chunk	*end;
-	size_t	size;
-	int		freed;
-}	t_arena;
-
-t_arena	*arena_init(size_t size);
-t_chunk	*region_create(size_t capacity);
-void	*arena_regions_free(t_arena *arena);
-void	*arena_alloc(size_t size, t_arena *arena);
-void	*arena_calloc(t_arena *arena, size_t size);
-void	*arena_realloc(t_arena *arena, void *old_ptr,
-			size_t size, size_t old_size);
-void	clear_arena(t_arena **arena);
-void	reset_arena(t_arena **arena);
 
 // memory
 void	*ft_print_memory(void *addr, size_t size);

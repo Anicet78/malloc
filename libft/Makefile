@@ -1,6 +1,6 @@
 AR			= ar rcs
 CC			= cc
-CFLAGS		= -ggdb -Wall -Werror -Wextra
+CFLAGS		= -ggdb -Wall -Werror -Wextra -fPIC
 
 HEADERS		= ../headers
 SRC_DIR		= srcs
@@ -55,8 +55,6 @@ SRC			=	libc/ft_atof.c					\
 				libc/ft_tolower.c				\
 				libc/ft_toupper.c				\
 				libc/tab_len.c					\
-				data/arena/ft_arena.c			\
-				data/arena/ft_arena2.c			\
 				data/dlst/ft_dlst_shift.c		\
 				data/dlst/ft_dlst_top.c			\
 				data/dlst/ft_dlstadd_back.c		\
