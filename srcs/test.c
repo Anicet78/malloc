@@ -1,8 +1,10 @@
 #include "malloc.h"
+#include "libft.h"
 
 int main(void) {
-	void* test = malloc(10);
+	char *test = ft_strdup("TEST");
+	// ft_printf("%s\n", test);
+	test = ft_strdup("bbbababababba");
 	show_alloc_mem_ex();
-	printf("%p\n", test);
 	return 0;
 }

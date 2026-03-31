@@ -1,5 +1,5 @@
 CC			= cc
-CFLAGS		= -Wall -Werror -Wextra -ggdb -fPIC
+CFLAGS		= -Wall -Wextra -Werror -ggdb -fPIC
 
 LIBFT_DIR	= libft
 LIBFT		= $(LIBFT_DIR)/libft.a
@@ -10,7 +10,7 @@ OBJ_DIR		= objs
 
 CFLAGS		+= -I$(HEADERS)
 
-SRC			= malloc.c utils.c
+SRC			= malloc.c pages.c utils.c
 OBJ			= $(patsubst %.c, $(OBJ_DIR)/%.o, $(SRC))
 
 TEST_SRC	= test.c
@@ -38,8 +38,8 @@ $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
 test: $(TEST_NAME)
 	./$(TEST_NAME)
 
-$(TEST_NAME): $(NAME) $(TEST_OBJ)
-	$(CC) $(CFLAGS) $(TEST_OBJ) -L. -lft_malloc_${HOSTTYPE} -Wl,-rpath,. -ggdb -o test_bin
+$(TEST_NAME): $(LIBFT) $(NAME) $(TEST_OBJ)
+	$(CC) $(CFLAGS) $(TEST_OBJ) $(LIBFT) -L. -lft_malloc_${HOSTTYPE} -Wl,-rpath,. -ggdb -o test_bin
 
 clean:
 	@printf "\e[1;36mCleaning files\e[0m\n"

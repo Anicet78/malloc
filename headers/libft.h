@@ -6,7 +6,7 @@
 /*   By: agruet <agruet@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/12 10:54:10 by agruet            #+#    #+#             */
-/*   Updated: 2026/03/27 15:43:52 by agruet           ###   ########.fr       */
+/*   Updated: 2026/03/30 17:59:38 by agruet           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -88,6 +88,8 @@ void	shift_elem_down(char **tab, char *elem);
 double	q_rsqrt(double number);
 int		ft_max(int a, int b);
 int		ft_min(int a, int b);
+size_t	ft_smax(size_t a, size_t b);
+size_t	ft_smin(size_t a, size_t b);
 
 // printf
 # define PRINTF_BUFF_SIZE 1024

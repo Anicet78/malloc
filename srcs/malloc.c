@@ -2,57 +2,39 @@
 
 volatile t_allocator* malloc_singleton;
 
-void*	newBlock(size_t size) {
-	// sysconf(_SC_PAGESIZE)
-	return mmap(NULL, size, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
-}
-
-void	*newChunk(size_t size) {
-	t_chunk* chunk = newBlock(size);
-
-	if (!chunk)
-		return (NULL);
-	chunk->data = (uint8_t*)(chunk + sizeof(t_chunk));
-	chunk->capacity = size - sizeof(t_chunk);
-	chunk->count = 0;
-	chunk->next = NULL;
-
-	return (chunk);
-}
-
 t_allocator*	firstAlloc() {
-	t_allocator* allocator = newBlock(MALLOC_REQUIRED_SIZE);
-
+	t_allocator* allocator = newRawPage(MALLOC_REQUIRED_SIZE);
 	if (!allocator)
 		return (NULL);
-	allocator->begin = (t_chunk*)(allocator + sizeof(t_allocator));
-	allocator->begin->data = (uint8_t*)(allocator->begin + sizeof(t_chunk));
-	allocator->begin->capacity = MALLOC_REQUIRED_SIZE - (sizeof(t_allocator) + sizeof(t_chunk));
-	allocator->begin->count = 0;
-	allocator->begin->next = NULL;
+
+	allocator->pages = NULL;
+	allocator->page_ptr = (t_page *)((uint8_t *)allocator + sizeof(t_allocator));
+	allocator->chunk_ptr = NULL;
+	allocator->page_end = (t_page *)((uint8_t *)allocator + MALLOC_REQUIRED_SIZE);
 
 	return (allocator);
 }
 
 void*	allocate(t_allocator* allocator, size_t size) {
-	t_chunk*	current_chunk = allocator->begin;
+	t_page*	current_page = allocator->pages;
+	t_chunk* space = NULL;
 
-	while (current_chunk) {
-		if (allocator->begin->capacity - allocator->begin->count > size)
-			break ;
-		if (current_chunk->next == NULL) {
-			current_chunk->next = newChunk(size);
-			current_chunk = current_chunk->next;
-			break ;
-		}
-		current_chunk = current_chunk->next;
+	while (current_page) {
+		space = findSpace(current_page, size);
+		if (space != NULL)
+			return (newChunk(current_page, size, space));
+		current_page = current_page->next;
 	}
-	if (!current_chunk)
+
+	t_page*	newPagePtr = newPage(size);
+	if (!newPagePtr)
 		return (NULL);
 
-	current_chunk->count += size;
+	space = findSpace(newPagePtr, size);
+	if (!space)
+		return (NULL);
 
-	return (current_chunk->data + current_chunk->count - size);
+	return (newChunk(newPagePtr, size, space));
 }
 
 void*	malloc(size_t size) {

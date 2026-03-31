@@ -6,7 +6,7 @@
 /*   By: agruet <agruet@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/13 13:27:32 by agruet            #+#    #+#             */
-/*   Updated: 2025/04/13 21:01:02 by agruet           ###   ########.fr       */
+/*   Updated: 2026/03/31 14:03:24 by agruet           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,7 +16,7 @@ void	print_line(char *addr, size_t size)
 {
 	size_t	i;
 
-	i = size;
+	i = size + (size % 2);
 	while (i < 16)
 	{
 		ft_printf("     ");
@@ -25,7 +25,7 @@ void	print_line(char *addr, size_t size)
 	i = 0;
 	while (i < size)
 	{
-		if (ft_isprint(*(addr + i)) && *(addr + i) > 13)
+		if (ft_isprint(*(addr + i)))
 			ft_printf("%c", *(addr + i));
 		else
 			ft_printf("%c", '.');
@@ -47,13 +47,13 @@ void	*ft_print_memory(void *addr, size_t size)
 		while (j < 16 && i + j < size)
 		{
 			if (i + j + 1 >= size)
-				ft_printf("%.2lx   ", *(char *)(addr + i + j));
+				ft_printf("%02x   ", *(unsigned char *)(addr + i + j));
 			else
-				ft_printf("%.2lx%.2lx ", *(char *)(addr + i + j),
-					*(char *)(addr + i + j + 1));
+				ft_printf("%02x%02x ", *(unsigned char *)(addr + i + j),
+					*(unsigned char *)(addr + i + j + 1));
 			j += 2;
 		}
-		print_line((char *)addr + i, j);
+		print_line((char *)addr + i, size - i > 16 ? 16 : size - i);
 		i += 16;
 	}
 	return (addr);

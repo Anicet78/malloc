@@ -96,6 +96,8 @@ SRC			=	libc/ft_atof.c					\
 				readfile/get_next_line.c		\
 				maths/ft_max.c					\
 				maths/ft_min.c					\
+				maths/ft_smax.c					\
+				maths/ft_smin.c					\
 				maths/q_rsqrt.c					\
 
 OBJ			= $(patsubst %.c, $(OBJ_DIR)/%.o, $(SRC))
