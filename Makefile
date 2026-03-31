@@ -10,7 +10,7 @@ OBJ_DIR		= objs
 
 CFLAGS		+= -I$(HEADERS)
 
-SRC			= malloc.c pages.c print.c
+SRC			= malloc.c free.c pages.c print.c
 OBJ			= $(patsubst %.c, $(OBJ_DIR)/%.o, $(SRC))
 
 TEST_SRC	= test.c
@@ -36,7 +36,7 @@ $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
 test: $(TEST_NAME)
-	./$(TEST_NAME)
+	@./$(TEST_NAME)
 
 $(TEST_NAME): $(LIBFT) $(NAME) $(TEST_OBJ)
 	$(CC) $(CFLAGS) $(TEST_OBJ) $(LIBFT) -L. -lft_malloc_${HOSTTYPE} -Wl,-rpath,. -ggdb -o test_bin

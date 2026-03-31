@@ -76,7 +76,9 @@ t_page*	newPage(size_t size) {
 }
 
 t_chunk*	findSpace(t_page* page, size_t size) {
-	t_chunk*	current_chunk = page->chunks;
+	if (page->ptr == NULL) return NULL;
+
+	t_chunk* current_chunk = page->chunks;
 
 	while (current_chunk) {
 		if (current_chunk->status == FREE && current_chunk->size >= size)
@@ -86,33 +88,39 @@ t_chunk*	findSpace(t_page* page, size_t size) {
 	return (NULL);
 }
 
-void*	newChunk(t_page* page, size_t size, t_chunk* free_chunk) {
+void*	subdivide(t_page* page, size_t size, t_chunk* free_chunk) {
 	t_allocator*	allocator = (t_allocator *)malloc_singleton;
+	t_chunk*		new_chunk = (t_chunk *)ft_smax((size_t)allocator->chunk_ptr, (size_t)allocator->page_ptr);
 
+	if ((t_page *)new_chunk > (t_page *)((uint8_t *)allocator->page_end - sizeof(t_chunk))) {
+		void* newPageInfos = newInternalPage();
+		if (!newPageInfos)
+			return (NULL);
+		new_chunk = (t_chunk *)((uint8_t *)newPageInfos + sizeof(t_page));
+	}
+
+	allocator->chunk_ptr = (t_chunk *)((uint8_t *)new_chunk + sizeof(t_chunk));
+
+	new_chunk->status = FREE;
+	new_chunk->data = (uint8_t *)free_chunk->data + size;
+	new_chunk->size = free_chunk->size - size;
+	new_chunk->next = free_chunk->next;
+	new_chunk->previous = free_chunk;
+
+	if (free_chunk->next)
+		free_chunk->next->previous = new_chunk;
+	else
+		page->chunks->previous = new_chunk;
+
+	free_chunk->next = new_chunk;
+
+	return (free_chunk);
+}
+
+void*	newChunk(t_page* page, size_t size, t_chunk* free_chunk) {
 	if (free_chunk->size > size) {
-		t_chunk* rem_chunk = (t_chunk *)ft_smax((size_t)allocator->chunk_ptr, (size_t)allocator->page_ptr);
-
-		if ((t_page *)rem_chunk > (t_page *)((uint8_t *)allocator->page_end - sizeof(t_chunk))) {
-			void* newPageInfos = newInternalPage();
-			if (!newPageInfos)
-				return (NULL);
-			rem_chunk = (t_chunk *)((uint8_t *)newPageInfos + sizeof(t_page));
-		}
-
-		allocator->chunk_ptr = (t_chunk *)((uint8_t *)rem_chunk + sizeof(t_chunk));
-
-		rem_chunk->status = FREE;
-		rem_chunk->data = (uint8_t *)free_chunk->data + size;
-		rem_chunk->size = free_chunk->size - size;
-		rem_chunk->next = free_chunk->next;
-		rem_chunk->previous = free_chunk;
-
-		if (free_chunk->next)
-			free_chunk->next->previous = rem_chunk;
-		else
-			page->chunks->previous = rem_chunk;
-
-		free_chunk->next = rem_chunk;
+		if (!subdivide(page, size, free_chunk))
+			return (NULL);
 	}
 
 	free_chunk->status = ALLOCATED;

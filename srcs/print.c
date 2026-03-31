@@ -1,6 +1,8 @@
 #include "malloc.h"
 
 void	printChunk(t_chunk* chunk) {
+	if (chunk->status == UNKNOWN) return ;
+
 	ft_printf("\033[1;34m----------- CHUNK ----------\033[0m\n");
 	if (chunk->status == ALLOCATED)
 		ft_printf("Status: \033[1;31mALLOCATED\033[0m\n");
@@ -35,10 +37,22 @@ void	show_alloc_mem_ex() {
 		return ;
 
 	ft_printf("\n\033[1;35m<<<<<<<<<< MALLOC >>>>>>>>>>\033[0m\n\n\n");
+
 	t_page* current_page = allocator->pages;
+	while (current_page && !current_page->ptr) {
+		current_page = current_page->next;
+	}
+	if (!current_page) {
+		ft_printf("--> NO HEAP ALLOCATIONS FOUND <--\n\n");
+		return ;
+	}
+
+	current_page = allocator->pages;
 	while (current_page) {
-		printPage(current_page);
-		ft_printf("\n");
+		if (current_page->ptr != NULL) {
+			printPage(current_page);
+			ft_printf("\n");
+		}
 		current_page = current_page->next;
 	}
 }

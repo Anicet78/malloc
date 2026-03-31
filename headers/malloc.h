@@ -8,6 +8,7 @@
 
 typedef enum alloc_status
 {
+	UNKNOWN,
 	ALLOCATED,
 	FREE
 }	alloc_status;
