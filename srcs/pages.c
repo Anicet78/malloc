@@ -1,8 +1,24 @@
 #include "malloc.h"
 
+size_t	calcPageSize(size_t size) {
+	size_t pagesize = sysconf(_SC_PAGESIZE);
+	size_t finalSize;
+
+	if (size == 0)
+		return (pagesize);
+	finalSize = (size / pagesize + (size % pagesize != 0)) * pagesize;
+	if (finalSize < size)
+		return (0);
+	return (finalSize);
+}
+
 void*	newRawPage(size_t size) {
-	//sysconf page max ...
-	return mmap(NULL, size, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+	void* ptr;
+
+	ptr = mmap(NULL, size, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+	if (ptr == MAP_FAILED)
+		return (NULL);
+	return (ptr);
 }
 
 t_page*	newInternalPage() {
@@ -27,6 +43,10 @@ t_page*	newPage(size_t size) {
 		if (!page_ptr)
 			return (NULL);
 	}
+
+	size = calcPageSize(size);
+	if (!size)
+		return (NULL);
 
 	void* raw_page = newRawPage(size);
 	if (!raw_page)

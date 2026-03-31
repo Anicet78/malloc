@@ -4,7 +4,7 @@
 # include "libft.h"
 # include <sys/mman.h>
 
-# define MALLOC_REQUIRED_SIZE 4096
+# define MALLOC_REQUIRED_SIZE sysconf(_SC_PAGESIZE)
 
 typedef enum alloc_status
 {
