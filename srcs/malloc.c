@@ -15,26 +15,20 @@ t_allocator*	firstAlloc() {
 	return (allocator);
 }
 
-void*	allocate(t_allocator* allocator, size_t size) {
-	t_page*	current_page = allocator->pages;
-	t_chunk* space = NULL;
+void*	allocate(size_t size) {
+	t_page*		page = NULL;
+	t_chunk*	empty_chunk1 = NULL;
+	t_chunk*	empty_chunk2 = NULL;
 
-	while (current_page) {
-		space = findSpace(current_page, size);
-		if (space != NULL)
-			return (newChunk(current_page, size, space));
-		current_page = current_page->next;
-	}
+	t_chunk* space = findSpace(size, &page, &empty_chunk1, &empty_chunk2);
+	if (space)
+		return (newChunk(page, size, space, empty_chunk1));
 
-	t_page*	newPagePtr = newPage(size);
+	t_page* newPagePtr = newPage(size, page);
 	if (!newPagePtr)
 		return (NULL);
 
-	space = findSpace(newPagePtr, size);
-	if (!space)
-		return (NULL);
-
-	return (newChunk(newPagePtr, size, space));
+	return (newChunk(newPagePtr, size, newPagePtr->chunks, newPagePtr->chunks == empty_chunk1 ? empty_chunk2 : empty_chunk1));
 }
 
 void*	malloc(size_t size) {
@@ -47,5 +41,5 @@ void*	malloc(size_t size) {
 	if (!allocator)
 		return (NULL);
 
-	return (allocate(allocator, size));
+	return (allocate(size));
 }

@@ -16,7 +16,7 @@ typedef enum alloc_status
 typedef struct s_chunk	t_chunk;
 struct s_chunk
 {
-	alloc_status	status;
+	uint8_t			status;
 	void*			data;
 	size_t			size;
 	t_chunk*		next;
@@ -44,9 +44,9 @@ typedef struct s_allocator
 extern volatile t_allocator* malloc_singleton;
 
 void*		newRawPage(size_t size);
-t_page*		newPage(size_t size);
-t_chunk*	findSpace(t_page* page, size_t size);
-void*		newChunk(t_page* page, size_t size, t_chunk* free_chunk);
+t_page*		newPage(size_t size, t_page* empty_page);
+t_chunk*	findSpace(size_t size, t_page** page, t_chunk** empty_chunk1, t_chunk** empty_chunk2);
+void*		newChunk(t_page* page, size_t size, t_chunk* free_chunk, t_chunk* empty_chunk);
 
 void	*malloc(size_t size);
 void	*realloc(void *ptr, size_t size);

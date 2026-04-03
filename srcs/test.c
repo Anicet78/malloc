@@ -16,5 +16,16 @@ int main(void) {
 	show_alloc_mem_ex();
 	free(test);
 	show_alloc_mem_ex();
+
+	for (int i = 0; i < 50000; i++) {
+		char *itoa = ft_itoa(i);
+		char *strjoin = ft_strjoin("TEST: ", itoa);
+		free(itoa);
+		// ft_printf("%s\n", strjoin);
+		free(strjoin);
+		char *tes = malloc(1000000000);
+		(void)tes;
+	}
+	// show_alloc_mem_ex();
 	return 0;
 }

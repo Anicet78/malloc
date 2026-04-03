@@ -34,11 +34,11 @@ t_page*	newInternalPage() {
 	return newPageInfos;
 }
 
-t_page*	newPage(size_t size) {
+t_page*	newPage(size_t size, t_page* empty_page) {
 	t_allocator*	allocator = (t_allocator *)malloc_singleton;
-	t_page*			page_ptr = (t_page *)ft_smax((size_t)allocator->chunk_ptr, (size_t)allocator->page_ptr);
+	t_page*			page_ptr = empty_page ? empty_page : (t_page *)ft_smax((size_t)allocator->chunk_ptr, (size_t)allocator->page_ptr);
 
-	if (page_ptr > (t_page *)((uint8_t *)allocator->page_end - sizeof(t_page))) {
+	if (!empty_page && page_ptr > (t_page *)((uint8_t *)allocator->page_end - sizeof(t_page) - sizeof(t_chunk))) {
 		page_ptr = newInternalPage();
 		if (!page_ptr)
 			return (NULL);
@@ -52,13 +52,16 @@ t_page*	newPage(size_t size) {
 	if (!raw_page)
 		return (NULL);
 
-	page_ptr->chunks = (t_chunk *)((uint8_t *)page_ptr + sizeof(t_page));
-	allocator->chunk_ptr = (t_chunk *)((uint8_t *)page_ptr->chunks + sizeof(t_chunk));
+	if (!empty_page) {
+		page_ptr->chunks = (t_chunk *)((uint8_t *)page_ptr + sizeof(t_page));
+		allocator->chunk_ptr = (t_chunk *)((uint8_t *)page_ptr->chunks + sizeof(t_chunk));
+	}
 	page_ptr->ptr = raw_page;
 	page_ptr->alloc_amount = 0;
 	page_ptr->next = NULL;
 	if (allocator->pages) {
-		allocator->pages->previous->next = page_ptr;
+		if (allocator->pages->previous != page_ptr)
+			allocator->pages->previous->next = page_ptr;
 		page_ptr->previous = allocator->pages->previous;
 	}
 	else
@@ -69,37 +72,64 @@ t_page*	newPage(size_t size) {
 	chunk->status = FREE;
 	chunk->data = raw_page;
 	chunk->size = size;
-	chunk->next = NULL;
-	chunk->previous = chunk;
+	if (!empty_page) {
+		chunk->next = NULL;
+		chunk->previous = chunk;
+	}
 
 	return page_ptr;
 }
 
-t_chunk*	findSpace(t_page* page, size_t size) {
-	if (page->ptr == NULL) return NULL;
+t_chunk*	findSpace(size_t size, t_page** page, t_chunk** empty_chunk1, t_chunk** empty_chunk2) {
+	t_allocator*	allocator = (t_allocator *)malloc_singleton;
+	t_page*			current_page = allocator->pages;
 
-	t_chunk* current_chunk = page->chunks;
+	while (current_page) {
+		t_chunk* current_chunk = current_page->chunks;
 
-	while (current_chunk) {
-		if (current_chunk->status == FREE && current_chunk->size >= size)
-			return current_chunk;
-		current_chunk = current_chunk->next;
+		if (!*page && current_page->ptr == NULL)
+			*page = current_page;
+		while (current_chunk) {
+			if (current_chunk->status == UNKNOWN) {
+				if (!*empty_chunk1)
+					*empty_chunk1 = current_chunk;
+				else if (!*empty_chunk2) {
+					*empty_chunk2 = current_chunk;
+					if (!current_page->ptr)
+						break ;
+				}
+			}
+			if (current_chunk->status == FREE && current_chunk->size >= size) {
+				*page = current_page;
+				return current_chunk;
+			}
+			current_chunk = current_chunk->next;
+		}
+		current_page = current_page->next;
 	}
+
 	return (NULL);
 }
 
-void*	subdivide(t_page* page, size_t size, t_chunk* free_chunk) {
+void*	subdivide(t_page* page, size_t size, t_chunk* free_chunk, t_chunk* empty_chunk) {
 	t_allocator*	allocator = (t_allocator *)malloc_singleton;
-	t_chunk*		new_chunk = (t_chunk *)ft_smax((size_t)allocator->chunk_ptr, (size_t)allocator->page_ptr);
+	t_chunk*		new_chunk = empty_chunk ? empty_chunk : (t_chunk *)ft_smax((size_t)allocator->chunk_ptr, (size_t)allocator->page_ptr);
 
-	if ((t_page *)new_chunk > (t_page *)((uint8_t *)allocator->page_end - sizeof(t_chunk))) {
+	if (!empty_chunk && (t_page *)new_chunk > (t_page *)((uint8_t *)allocator->page_end - sizeof(t_chunk))) {
 		void* newPageInfos = newInternalPage();
 		if (!newPageInfos)
 			return (NULL);
 		new_chunk = (t_chunk *)((uint8_t *)newPageInfos + sizeof(t_page));
 	}
 
-	allocator->chunk_ptr = (t_chunk *)((uint8_t *)new_chunk + sizeof(t_chunk));
+	if (empty_chunk) {
+		if (empty_chunk->next)
+			empty_chunk->next->previous = empty_chunk->previous;
+		if (empty_chunk->previous)
+			empty_chunk->previous->next = empty_chunk->next;
+	}
+	else
+		allocator->chunk_ptr = (t_chunk *)((uint8_t *)new_chunk + sizeof(t_chunk));
 
 	new_chunk->status = FREE;
 	new_chunk->data = (uint8_t *)free_chunk->data + size;
@@ -117,9 +147,9 @@ void*	subdivide(t_page* page, size_t size, t_chunk* free_chunk) {
 	return (free_chunk);
 }
 
-void*	newChunk(t_page* page, size_t size, t_chunk* free_chunk) {
+void*	newChunk(t_page* page, size_t size, t_chunk* free_chunk, t_chunk* empty_chunk) {
 	if (free_chunk->size > size) {
-		if (!subdivide(page, size, free_chunk))
+		if (!subdivide(page, size, free_chunk, empty_chunk))
 			return (NULL);
 	}
 
