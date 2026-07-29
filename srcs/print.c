@@ -1,58 +1,48 @@
 #include "malloc.h"
 
-void	printChunk(t_chunk* chunk) {
-	if (chunk->status == UNKNOWN) return ;
+void	printTiny() {
+	t_zone*		current_zone = malloc_singleton.tiny;
+	uint64_t	zone_index = 1;
 
-	ft_printf("\033[1;34m----------- CHUNK ----------\033[0m\n");
-	if (chunk->status == ALLOCATED)
-		ft_printf("Status: \033[1;31mALLOCATED\033[0m\n");
-	else
-		ft_printf("Status: \033[1;32mFREE\033[0m\n");
-	ft_printf("Size: %lu\nData pointer: %p\n\n", chunk->size, chunk->data);
+	if (!current_zone)
+		return ;
 
-	if (chunk->status == ALLOCATED) {
-		ft_printf("\033[36m~~~~~~~~~~~ DATA ~~~~~~~~~~~\033[0m\n");
-		ft_print_memory(chunk->data, chunk->size);
-		ft_printf("\n");
-	}
-}
+	ft_printf("%s=========== TINY ===========%s\n\n", COLOR_YELLOW, COLOR_NC);
 
-void	printPage(t_page* page) {
-	ft_printf("\033[1;33m=========== PAGE ===========\033[0m\nData pointer: %p\nAllocation amount: %lu\n\n",
-		page->ptr,
-		page->alloc_amount
-	);
+	while (current_zone) {
+		ft_printf("%s---------- Zone %d ----------%s\n\n", COLOR_LIGHT_GRAY, zone_index, COLOR_NC);
 
-	t_chunk* current_chunk = page->chunks;
-	while (current_chunk) {
-		printChunk(current_chunk);
-		ft_printf("\n");
-		current_chunk = current_chunk->next;
+		t_tinychunk*	current_chunk = getFirstChunk(current_zone);
+		t_tinychunk*	zone_limit = (void *)(current_chunk) + current_zone->size;
+		uint64_t		chunk_size = align(sizeof(t_tinychunk) + MALLOC_TINY_SIZE_LIMIT);
+
+		while (current_chunk < zone_limit && current_chunk->allocated == true) {
+			ft_printf("%s############ CHUNK ############%s\n", COLOR_LIGHT_BLUE);
+			if (current_chunk->allocated == true)
+				ft_printf("Status: %sALLOCATED%s\n",COLOR_LIGHT_RED, COLOR_NC);
+			else
+				ft_printf("Status: %sFREE%s\n", COLOR_LIGHT_GREEN, COLOR_NC);
+			ft_printf("Size: %lu\n", current_chunk->size);
+
+			if (current_chunk->allocated == true) {
+				ft_printf("%s~~~~~~~~~~~ DATA ~~~~~~~~~~~%s\n", COLOR_LIGHT_CYAN, COLOR_NC);
+				ft_print_memory((void *)align((uint64_t)current_chunk + sizeof(t_tinychunk)), current_chunk->size);
+				ft_printf("\n");
+			}
+			current_chunk += chunk_size;
+		}
+		current_zone = current_zone->next;
+		zone_index++;
 	}
 }
 
 void	show_alloc_mem_ex() {
-	t_allocator* allocator = (t_allocator *)malloc_singleton;
-	if (!allocator)
-		return ;
+	ft_printf("\n%s<<<<<<<<<< MALLOC >>>>>>>>>>%s\n\n\n", COLOR_LIGHT_PURPLE, COLOR_NC);
 
-	ft_printf("\n\033[1;35m<<<<<<<<<< MALLOC >>>>>>>>>>\033[0m\n\n\n");
+	uint64_t total_allocations = 0;
 
-	t_page* current_page = allocator->pages;
-	while (current_page && !current_page->ptr) {
-		current_page = current_page->next;
-	}
-	if (!current_page) {
+	printTiny();
+
+	if (total_allocations == 0)
 		ft_printf("--> NO HEAP ALLOCATIONS FOUND <--\n\n");
-		return ;
-	}
-
-	current_page = allocator->pages;
-	while (current_page) {
-		if (current_page->ptr != NULL) {
-			printPage(current_page);
-			ft_printf("\n");
-		}
-		current_page = current_page->next;
-	}
 }

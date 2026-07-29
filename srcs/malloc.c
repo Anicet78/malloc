@@ -1,6 +1,6 @@
 #include "malloc.h"
 
-volatile t_allocator malloc_singleton;
+t_allocator malloc_singleton;
 
 void*	tinyAlloc(size_t size)
 {
@@ -8,7 +8,7 @@ void*	tinyAlloc(size_t size)
 	t_tinychunk*	chunk = findTinySpace(size, &zone);
 
 	if (chunk)
-		return (align(chunk + sizeof(t_tinychunk)));
+		return ((void *)align((uint64_t)chunk + sizeof(t_tinychunk)));
 
 	zone = newZone(size);
 	if (!zone)
@@ -21,13 +21,14 @@ void*	tinyAlloc(size_t size)
 	zone->amount++;
 	zone->used += align(sizeof(t_tinychunk) + MALLOC_SMALL_SIZE_LIMIT);
 
-	return (align(chunk + sizeof(t_tinychunk)));
+	return ((void *)align((uint64_t)chunk + sizeof(t_tinychunk)));
 }
 
 void*	malloc(size_t size) {
 	if (size <= MALLOC_TINY_SIZE_LIMIT)
 		return (tinyAlloc(size));
-	else if (size <= MALLOC_SMALL_SIZE_LIMIT)
-		return (smallAlloc(size));
-	return (largeAlloc(size));
+	return (NULL);
+	// else if (size <= MALLOC_SMALL_SIZE_LIMIT)
+	// 	return (smallAlloc(size));
+	// return (largeAlloc(size));
 }

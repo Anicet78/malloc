@@ -23,7 +23,7 @@ void	insertZone(t_zone* zone_ptr, t_zone** zone_list) {
 	}
 }
 
-t_zone*	tinyZone(size_t size, uint64_t* zone_size) {
+t_zone*	tinyZone(uint64_t* zone_size) {
 	*zone_size = calcPageSize(align(sizeof(t_zone) + sizeof(t_tinychunk) + MALLOC_TINY_ZONE_SIZE));
 
 	t_zone*	zone_ptr = newRawPage(*zone_size);
@@ -33,8 +33,8 @@ t_zone*	tinyZone(size_t size, uint64_t* zone_size) {
 	insertZone(zone_ptr, &malloc_singleton.tiny);
 
 	t_tinychunk*	chunk = getFirstChunk(zone_ptr);
-	t_tinychunk*	zone_limit = (uint64_t *)(chunk) + (*zone_size);
-	uint64_t		chunk_size = align(sizeof(t_tinychunk) + MALLOC_SMALL_SIZE_LIMIT);
+	t_tinychunk*	zone_limit = (t_tinychunk *)((uint64_t)chunk + (*zone_size));
+	uint64_t		chunk_size = align(sizeof(t_tinychunk) + MALLOC_TINY_SIZE_LIMIT);
 
 	while (chunk < zone_limit) {
 		chunk->allocated = false;
@@ -45,7 +45,7 @@ t_zone*	tinyZone(size_t size, uint64_t* zone_size) {
 	return (zone_ptr);
 }
 
-t_zone*	smallZone(size_t size, uint64_t* zone_size) {
+t_zone*	smallZone(uint64_t* zone_size) {
 	*zone_size = calcPageSize(align(sizeof(t_zone) + sizeof(t_smallchunk) + MALLOC_SMALL_ZONE_SIZE));
 
 	t_zone*	zone_ptr = newRawPage(*zone_size);
@@ -59,6 +59,8 @@ t_zone*	smallZone(size_t size, uint64_t* zone_size) {
 	chunk->size = MALLOC_SMALL_ZONE_SIZE;
 	chunk->next = NULL;
 	chunk->previous = chunk;
+
+	return (zone_ptr);
 }
 
 t_zone*	largeZone(size_t size, uint64_t* zone_size) {
@@ -73,6 +75,8 @@ t_zone*	largeZone(size_t size, uint64_t* zone_size) {
 	t_largechunk* chunk = getFirstChunk(zone_ptr);
 	chunk->allocated = false;
 	chunk->size = 0;
+
+	return (zone_ptr);
 }
 
 t_zone*	newZone(size_t size) {
@@ -80,9 +84,9 @@ t_zone*	newZone(size_t size) {
 	uint64_t	zone_size;
 
 	if (size <= MALLOC_TINY_SIZE_LIMIT)
-		zone_ptr = tinyZone(size, &zone_size);
+		zone_ptr = tinyZone(&zone_size);
 	else if (size <= MALLOC_SMALL_SIZE_LIMIT)
-		zone_ptr = smallZone(size, &zone_size);
+		zone_ptr = smallZone(&zone_size);
 	else
 		zone_ptr = largeZone(size, &zone_size);
 
@@ -92,4 +96,6 @@ t_zone*	newZone(size_t size) {
 	zone_ptr->size = zone_size;
 	zone_ptr->used = 0;
 	zone_ptr->amount = 0;
+
+	return (zone_ptr);
 }

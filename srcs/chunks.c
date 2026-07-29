@@ -9,7 +9,7 @@ t_tinychunk*	findTinySpaceInZone(size_t size, t_zone* zone) {
 		return (NULL);
 
 	t_tinychunk*	current_chunk = getFirstChunk(zone);
-	t_tinychunk*	zone_limit = (uint64_t *)(current_chunk) + zone->size;
+	t_tinychunk*	zone_limit = (void *)(current_chunk) + zone->size;
 	uint64_t		chunk_size = align(sizeof(t_tinychunk) + MALLOC_SMALL_SIZE_LIMIT);
 
 	while (current_chunk < zone_limit && current_chunk->allocated == true) {
@@ -18,6 +18,8 @@ t_tinychunk*	findTinySpaceInZone(size_t size, t_zone* zone) {
 
 	if (current_chunk < zone_limit)
 		return (current_chunk);
+
+	return (NULL);
 }
 
 t_tinychunk*	findTinySpace(size_t size, t_zone** zone) {
