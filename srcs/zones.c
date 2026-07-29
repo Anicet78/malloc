@@ -4,9 +4,23 @@ t_zone*	lowerBound(t_zone* zone_ptr, t_zone* zone_list) {
 	while (zone_list->next && zone_list < zone_ptr) {
 		zone_list = zone_list->next;
 	}
+
 	if (zone_list->next)
 		return zone_list->previous;
-	return zone_list;
+
+	return (zone_list);
+}
+
+void	insertZone(t_zone* zone_ptr, t_zone** zone_list) {
+	if (*zone_list == NULL)
+		*zone_list = zone_ptr;
+	else {
+		t_zone* zoneEmplacement = lowerBound(zone_ptr, *zone_list);
+		zone_ptr->next = zoneEmplacement->next;
+		zone_ptr->previous = zoneEmplacement;
+		zoneEmplacement->next->previous = zone_ptr;
+		zoneEmplacement->next = zone_ptr;
+	}
 }
 
 t_zone*	tinyZone(size_t size, uint64_t* zone_size) {
@@ -16,19 +30,19 @@ t_zone*	tinyZone(size_t size, uint64_t* zone_size) {
 	if (!zone_ptr)
 		return (NULL);
 
-	if (malloc_singleton.tiny == NULL)
-		malloc_singleton.tiny = zone_ptr;
-	else {
-		t_zone* zoneEmplacement = lowerBound(zone_ptr, malloc_singleton.tiny);
-		zone_ptr->next = zoneEmplacement->next;
-		zone_ptr->previous = zoneEmplacement;
-		zoneEmplacement->next->previous = zone_ptr;
-		zoneEmplacement->next = zone_ptr;
+	insertZone(zone_ptr, &malloc_singleton.tiny);
+
+	t_tinychunk*	chunk = getFirstChunk(zone_ptr);
+	t_tinychunk*	zone_limit = (uint64_t *)(chunk) + (*zone_size);
+	uint64_t		chunk_size = align(sizeof(t_tinychunk) + MALLOC_SMALL_SIZE_LIMIT);
+
+	while (chunk < zone_limit) {
+		chunk->allocated = false;
+		chunk->size = 0;
+		chunk += chunk_size;
 	}
 
-	t_tinychunk* chunk = getFirstChunk(zone_ptr);
-	chunk->allocated = false;
-	chunk->size = *zone_size;
+	return (zone_ptr);
 }
 
 t_zone*	smallZone(size_t size, uint64_t* zone_size) {
@@ -38,19 +52,11 @@ t_zone*	smallZone(size_t size, uint64_t* zone_size) {
 	if (!zone_ptr)
 		return (NULL);
 
-	if (malloc_singleton.small == NULL)
-		malloc_singleton.small = zone_ptr;
-	else {
-		t_zone* zoneEmplacement = lowerBound(zone_ptr, malloc_singleton.small);
-		zone_ptr->next = zoneEmplacement->next;
-		zone_ptr->previous = zoneEmplacement;
-		zoneEmplacement->next->previous = zone_ptr;
-		zoneEmplacement->next = zone_ptr;
-	}
+	insertZone(zone_ptr, &malloc_singleton.small);
 
 	t_smallchunk* chunk = getFirstChunk(zone_ptr);
 	chunk->allocated = false;
-	chunk->size = *zone_size;
+	chunk->size = MALLOC_SMALL_ZONE_SIZE;
 	chunk->next = NULL;
 	chunk->previous = chunk;
 }
@@ -62,24 +68,16 @@ t_zone*	largeZone(size_t size, uint64_t* zone_size) {
 	if (!zone_ptr)
 		return (NULL);
 
-	if (malloc_singleton.large == NULL)
-		malloc_singleton.large = zone_ptr;
-	else {
-		t_zone* zoneEmplacement = lowerBound(zone_ptr, malloc_singleton.large);
-		zone_ptr->next = zoneEmplacement->next;
-		zone_ptr->previous = zoneEmplacement;
-		zoneEmplacement->next->previous = zone_ptr;
-		zoneEmplacement->next = zone_ptr;
-	}
+	insertZone(zone_ptr, &malloc_singleton.large);
 
 	t_largechunk* chunk = getFirstChunk(zone_ptr);
 	chunk->allocated = false;
-	chunk->size = *zone_size;
+	chunk->size = 0;
 }
 
 t_zone*	newZone(size_t size) {
 	t_zone*		zone_ptr;
-	uint64_t*	zone_size;
+	uint64_t	zone_size;
 
 	if (size <= MALLOC_TINY_SIZE_LIMIT)
 		zone_ptr = tinyZone(size, &zone_size);
@@ -89,33 +87,9 @@ t_zone*	newZone(size_t size) {
 		zone_ptr = largeZone(size, &zone_size);
 
 	if (zone_ptr == NULL)
-		return NULL;
+		return (NULL);
 
-	zone_ptr->next = NULL;
-	zone_ptr->previous = zone_ptr;
 	zone_ptr->size = zone_size;
 	zone_ptr->used = 0;
 	zone_ptr->amount = 0;
-}
-
-t_tinychunk*	findTinySpace(size_t size, t_zone** zone) {
-	t_zone* current_zone = malloc_singleton.tiny;
-
-	while (current_zone) {
-		if (current_zone->used + align(sizeof(t_tinychunk) + size) > current_zone->size) {
-			t_tinychunk* current_chunk = getFirstChunk(current_zone);
-			while (current_chunk < getFirstChunk(current_zone) + current_zone->size && (current_chunk->allocated == true || current_chunk->size < size)) {
-				current_chunk += align(sizeof(t_tinychunk) + MALLOC_SMALL_SIZE_LIMIT);
-			}
-			if (current_chunk < getFirstChunk(current_zone) + current_zone->size)
-				return (current_chunk);
-		}
-		current_zone = current_zone->next;
-	}
-
-	if (!current_zone)
-		return (NULL);
-
-
-	return ;
 }

@@ -7,16 +7,21 @@ void*	tinyAlloc(size_t size)
 	t_zone*			zone;
 	t_tinychunk*	chunk = findTinySpace(size, &zone);
 
-	if (!chunk) {
-		zone = newZone(size);
-		if (!zone)
-			return (NULL);
-		chunk = findTinySpaceInZone(size, zone);
-	}
+	if (chunk)
+		return (align(chunk + sizeof(t_tinychunk)));
 
-	fragment(chunk);
+	zone = newZone(size);
+	if (!zone)
+		return (NULL);
 
-	return (chunk);
+	chunk = findTinySpaceInZone(size, zone);
+	if (!chunk)
+		return (NULL);
+
+	zone->amount++;
+	zone->used += align(sizeof(t_tinychunk) + MALLOC_SMALL_SIZE_LIMIT);
+
+	return (align(chunk + sizeof(t_tinychunk)));
 }
 
 void*	malloc(size_t size) {
