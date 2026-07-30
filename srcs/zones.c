@@ -21,7 +21,8 @@ void	insertZone(t_zone* zone_ptr, t_zone** zone_list) {
 		t_zone* zoneEmplacement = lowerBound(zone_ptr, *zone_list);
 		zone_ptr->next = zoneEmplacement->next;
 		zone_ptr->previous = zoneEmplacement;
-		zoneEmplacement->next->previous = zone_ptr;
+		if (zoneEmplacement->next)
+			zoneEmplacement->next->previous = zone_ptr;
 		zoneEmplacement->next = zone_ptr;
 	}
 }
@@ -81,6 +82,8 @@ t_zone*	largeZone(size_t size, uint64_t* zone_size) {
 	chunk->allocated = false;
 	chunk->size = 0;
 
+	*zone_size -= (uint64_t)chunk - (uint64_t)zone_ptr;
+
 	return (zone_ptr);
 }
 
@@ -90,8 +93,8 @@ t_zone*	newZone(size_t size) {
 
 	if (size <= MALLOC_TINY_SIZE_LIMIT)
 		zone_ptr = tinyZone(&zone_size);
-	else if (size <= MALLOC_SMALL_SIZE_LIMIT)
-		zone_ptr = smallZone(&zone_size);
+	// else if (size <= MALLOC_SMALL_SIZE_LIMIT)
+	// 	zone_ptr = smallZone(&zone_size);
 	else
 		zone_ptr = largeZone(size, &zone_size);
 
@@ -99,6 +102,7 @@ t_zone*	newZone(size_t size) {
 		return (NULL);
 
 	zone_ptr->size = zone_size;
+	zone_ptr->reserved = 0;
 	zone_ptr->used = 0;
 	zone_ptr->amount = 0;
 

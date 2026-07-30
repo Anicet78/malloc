@@ -15,7 +15,7 @@ void	deleteZone(t_zone* zone) {
 	if (zone->next)
 		zone->next->previous = zone->previous;
 
-	munmap(zone, zone->size + align(sizeof(t_zone)));
+	munmap(zone, align(sizeof(t_zone) + zone->size));
 }
 
 void	freeTiny(t_tinychunk* chunk) {
@@ -29,11 +29,22 @@ void	freeTiny(t_tinychunk* chunk) {
 		deleteZone(zone);
 		return ;
 	}
+	zone->reserved -= align(sizeof(t_tinychunk) + MALLOC_TINY_SIZE_LIMIT);
+	zone->used -= align(sizeof(t_tinychunk) + chunk->size);
 	zone->amount--;
-	zone->used -= align(sizeof(t_tinychunk) + MALLOC_TINY_SIZE_LIMIT);
 
 	chunk->size = 0;
 	chunk->allocated = false;
+}
+
+void	freeLarge(t_largechunk* chunk) {
+	t_zone* zone = searchZone(chunk, malloc_singleton.large);
+	if (zone == NULL)
+		return ;
+
+	if (malloc_singleton.large == zone)
+		malloc_singleton.large = NULL;
+	deleteZone(zone);
 }
 
 void	MyFree(void* ptr) {
@@ -43,6 +54,6 @@ void	MyFree(void* ptr) {
 		freeTiny(ptr - align(sizeof(t_tinychunk)));
 	// else if (size <= MALLOC_SMALL_SIZE_LIMIT)
 	// 	smallAlloc(size);
-	// else
-	// 	largeAlloc(size);
+	else
+		freeLarge(ptr - align(sizeof(t_largechunk)));
 }

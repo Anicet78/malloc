@@ -10,7 +10,7 @@ OBJ_DIR		= objs
 
 CFLAGS		+= -I$(HEADERS)
 
-SRC			= chunks.c free.c malloc.c pages.c print.c zones.c
+SRC			= chunks.c free.c malloc.c pages.c show.c show_ex.c zones.c
 OBJ			= $(patsubst %.c, $(OBJ_DIR)/%.o, $(SRC))
 
 TEST_SRC	= test2.c

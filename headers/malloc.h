@@ -21,6 +21,7 @@ struct s_zone
 	t_zone*		next;
 	t_zone*		previous;
 	uint64_t	size;
+	uint64_t	reserved;
 	uint64_t	used;
 	uint64_t	amount;
 };
@@ -67,9 +68,12 @@ t_zone*	newZone(size_t size);
 
 // Chunk
 void*			getFirstChunk(t_zone* zone);
+void*			getTinyChunkData(t_tinychunk* chunk);
 void*			claimTinyChunk(t_zone* zone, t_tinychunk* chunk, size_t size);
 t_tinychunk*	findTinySpace(size_t size, t_zone** zone);
 t_tinychunk*	findTinySpaceInZone(size_t size, t_zone* zone);
+void*			getLargeChunkData(t_largechunk* chunk);
+void*			claimLargeChunk(t_zone* zone, t_largechunk* chunk, size_t size);
 
 // void	*malloc(size_t size);
 void	*MyMalloc(size_t size);

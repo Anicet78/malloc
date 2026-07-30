@@ -1,6 +1,6 @@
 #include "malloc.h"
 
-void	printTiny(uint64_t* total_allocations) {
+static void	printTiny(uint64_t* total_allocations) {
 	t_zone*		current_zone = malloc_singleton.tiny;
 	uint64_t	zone_index = 1;
 
@@ -10,7 +10,7 @@ void	printTiny(uint64_t* total_allocations) {
 	ft_printf("%s=========== TINY ===========%s\n\n", COLOR_YELLOW, COLOR_NC);
 
 	while (current_zone) {
-		ft_printf("%s---------- Zone %d ----------%s\nSize: %lu\nUsed: %lu\nAllocation amount: %lu\n\n", COLOR_LIGHT_GRAY, zone_index, COLOR_NC, current_zone->size, current_zone->used, current_zone->amount);
+		ft_printf("%s---------- Zone %d ----------%s\nSize: %lu\nReserved: %lu\nUsed: %lu\nAllocation amount: %lu\n\n", COLOR_LIGHT_GRAY, zone_index, COLOR_NC, current_zone->size, current_zone->reserved, current_zone->used, current_zone->amount);
 
 		t_tinychunk*	current_chunk = getFirstChunk(current_zone);
 		t_tinychunk*	zone_limit = (void *)(current_chunk) + current_zone->size;
@@ -49,6 +49,5 @@ void	show_alloc_mem_ex() {
 		return ;
 	}
 
-	ft_printf("%lu allocation%s found\n", total_allocations, total_allocations == 1 ? "" : "s");
-
+	ft_printf("%lu allocation%s\n", total_allocations, total_allocations == 1 ? "" : "s");
 }

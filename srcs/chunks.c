@@ -4,18 +4,23 @@ void*	getFirstChunk(t_zone* zone) {
 	return ((void *)align((uint64_t)zone + sizeof(t_zone)));
 }
 
+void*	getTinyChunkData(t_tinychunk* chunk) {
+	return ((void *)align((uint64_t)chunk + sizeof(t_tinychunk)));
+}
+
 void*	claimTinyChunk(t_zone* zone, t_tinychunk* chunk, size_t size) {
 	chunk->size = size;
 	chunk->allocated = true;
 
 	zone->amount++;
-	zone->used += align(sizeof(t_tinychunk) + MALLOC_TINY_SIZE_LIMIT);
+	zone->reserved += align(sizeof(t_tinychunk) + MALLOC_TINY_SIZE_LIMIT);
+	zone->used = align(sizeof(t_tinychunk) + size);
 
-	return ((void *)align((uint64_t)chunk + sizeof(t_tinychunk)));
+	return (getTinyChunkData(chunk));
 }
 
 t_tinychunk*	findTinySpaceInZone(size_t size, t_zone* zone) {
-	if (zone->used + align(sizeof(t_tinychunk) + size) > zone->size)
+	if (zone->reserved + align(sizeof(t_tinychunk) + size) > zone->size)
 		return (NULL);
 
 	t_tinychunk*	current_chunk = getFirstChunk(zone);
@@ -47,4 +52,19 @@ t_tinychunk*	findTinySpace(size_t size, t_zone** zone) {
 	}
 
 	return (NULL);
+}
+
+void*	getLargeChunkData(t_largechunk* chunk) {
+	return ((void *)align((uint64_t)chunk + sizeof(t_largechunk)));
+}
+
+void*	claimLargeChunk(t_zone* zone, t_largechunk* chunk, size_t size) {
+	chunk->size = size;
+	chunk->allocated = true;
+
+	zone->reserved = zone->size;
+	zone->used = size;
+	zone->amount++;
+
+	return ((void *)align((uint64_t)chunk + sizeof(t_largechunk)));
 }
