@@ -8,7 +8,7 @@ void*	tinyAlloc(size_t size)
 	t_tinychunk*	chunk = findTinySpace(size, &zone);
 
 	if (chunk)
-		return (claimTinyChunk(chunk, size));
+		return (claimTinyChunk(zone, chunk, size));
 
 	zone = newZone(size);
 	if (!zone)
@@ -18,10 +18,7 @@ void*	tinyAlloc(size_t size)
 	if (!chunk)
 		return (NULL);
 
-	zone->amount++;
-	zone->used += align(sizeof(t_tinychunk) + MALLOC_TINY_SIZE_LIMIT);
-
-	return (claimTinyChunk(chunk, size));
+	return (claimTinyChunk(zone, chunk, size));
 }
 
 void*	MyMalloc(size_t size) {

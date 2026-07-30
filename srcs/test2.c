@@ -11,6 +11,7 @@ int main(void) {
 	test[0] = 'A';
 	test[15] = 'B';
 	test2[15] = 'C';
+	MyFree(test);
 	show_alloc_mem_ex();
 	return 0;
 }

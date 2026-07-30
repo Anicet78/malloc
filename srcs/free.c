@@ -1,54 +1,48 @@
 #include "malloc.h"
 
-void	deleteChunk(t_chunk* chunk) {
-	chunk->status = UNKNOWN;
-	chunk->data = NULL;
-	chunk->size = 0;
+t_zone*	searchZone(void* ptr, t_zone* zone) {
+	if (!zone)
+		return (NULL);
+
+	while (ptr > (void *)zone && zone->next)
+		zone = zone->next;
+
+	return (zone);
 }
 
-void	deletePage(t_page* page) {
-	munmap(page->ptr, page->chunks->size);
-	page->ptr = NULL;
+void	deleteZone(t_zone* zone) {
+	zone->previous->next = zone->next;
+	if (zone->next)
+		zone->next->previous = zone->previous;
+
+	munmap(zone, zone->size + align(sizeof(t_zone)));
 }
 
-void	unAllocate(t_chunk* chunk, t_page* page) {
-	t_chunk*	next = chunk->next;
-	t_chunk*	previous = chunk->previous;
+void	freeTiny(t_tinychunk* chunk) {
+	t_zone* zone = searchZone(chunk, malloc_singleton.tiny);
+	if (zone == NULL)
+		return ;
 
-	chunk->status = FREE;
-	page->alloc_amount--;
-
-	if (next && next->status == FREE && chunk->size + next->size >= chunk->size) {
-		chunk->size += next->size;
-		deleteChunk(next);
-	}
-
-	if (previous && previous->next != NULL && previous->status == FREE && chunk->size + previous->size >= chunk->size) {
-		previous->size += chunk->size;
-		deleteChunk(chunk);
-	}
-
-	if (page->alloc_amount == 0) {
-		deleteChunk(page->chunks);
-		deletePage(page);
+	if (zone->amount <= 1) {
+		if (malloc_singleton.tiny == zone)
+			malloc_singleton.tiny = NULL;
+		deleteZone(zone);
 		return ;
 	}
+	zone->amount--;
+	zone->used -= align(sizeof(t_tinychunk) + MALLOC_TINY_SIZE_LIMIT);
+
+	chunk->size = 0;
+	chunk->allocated = false;
 }
 
-void	free(void *ptr) {
-	t_allocator*	allocator = (t_allocator *)malloc_singleton;
-	t_page*			current_page = allocator->pages;
+void	MyFree(void* ptr) {
+	uint64_t size = *(uint64_t *)(ptr - ALIGNMENT);
 
-	while (current_page) {
-		t_chunk* current_chunk = current_page->chunks;
-
-		while (current_page->ptr > NULL && current_chunk) {
-			if (current_chunk->data == ptr) {
-				unAllocate(current_chunk, current_page);
-				return ;
-			}
-			current_chunk = current_chunk->next;
-		}
-		current_page = current_page->next;
-	}
+	if (size <= MALLOC_TINY_SIZE_LIMIT)
+		freeTiny(ptr - align(sizeof(t_tinychunk)));
+	// else if (size <= MALLOC_SMALL_SIZE_LIMIT)
+	// 	smallAlloc(size);
+	// else
+	// 	largeAlloc(size);
 }

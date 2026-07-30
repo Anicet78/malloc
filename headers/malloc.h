@@ -10,7 +10,7 @@
 # define ALIGNMENT alignof(max_align_t)
 
 # define MALLOC_TINY_SIZE_LIMIT 64
-# define MALLOC_TINY_ZONE_SIZE 32768
+# define MALLOC_TINY_ZONE_SIZE  2048 // 32768
 
 # define MALLOC_SMALL_SIZE_LIMIT 16384
 # define MALLOC_SMALL_ZONE_SIZE 32768
@@ -67,13 +67,15 @@ t_zone*	newZone(size_t size);
 
 // Chunk
 void*			getFirstChunk(t_zone* zone);
-void*			claimTinyChunk(t_tinychunk* chunk, size_t size);
+void*			claimTinyChunk(t_zone* zone, t_tinychunk* chunk, size_t size);
 t_tinychunk*	findTinySpace(size_t size, t_zone** zone);
 t_tinychunk*	findTinySpaceInZone(size_t size, t_zone* zone);
 
+// void	*malloc(size_t size);
 void	*MyMalloc(size_t size);
 void	*realloc(void *ptr, size_t size);
-void	free(void *ptr);
+// void	free(void *ptr);
+void	MyFree(void* ptr);
 
 void	show_alloc_mem();
 void	show_alloc_mem_ex();

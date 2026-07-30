@@ -12,8 +12,11 @@ t_zone*	lowerBound(t_zone* zone_ptr, t_zone* zone_list) {
 }
 
 void	insertZone(t_zone* zone_ptr, t_zone** zone_list) {
-	if (*zone_list == NULL)
+	if (*zone_list == NULL) {
 		*zone_list = zone_ptr;
+		zone_ptr->previous = zone_ptr;
+		zone_ptr->next = NULL;
+	}
 	else {
 		t_zone* zoneEmplacement = lowerBound(zone_ptr, *zone_list);
 		zone_ptr->next = zoneEmplacement->next;
@@ -40,7 +43,7 @@ t_zone*	tinyZone(uint64_t* zone_size) {
 	while (chunk < zone_limit) {
 		chunk->allocated = false;
 		chunk->size = 0;
-		chunk += chunk_size;
+		chunk = (t_tinychunk *)((uint64_t)chunk + chunk_size);
 	}
 
 
