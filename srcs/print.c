@@ -1,6 +1,6 @@
 #include "malloc.h"
 
-void	printTiny() {
+void	printTiny(uint64_t* total_allocations) {
 	t_zone*		current_zone = malloc_singleton.tiny;
 	uint64_t	zone_index = 1;
 
@@ -17,15 +17,17 @@ void	printTiny() {
 		uint64_t		chunk_size = align(sizeof(t_tinychunk) + MALLOC_TINY_SIZE_LIMIT);
 
 		while (current_chunk < zone_limit && current_chunk->allocated == true) {
-			ft_printf("%s############ CHUNK ############%s\n", COLOR_LIGHT_BLUE);
-			if (current_chunk->allocated == true)
+			ft_printf("%s########## CHUNK ###########%s\n", COLOR_LIGHT_BLUE);
+			if (current_chunk->allocated == true) {
 				ft_printf("Status: %sALLOCATED%s\n",COLOR_LIGHT_RED, COLOR_NC);
+				(*total_allocations)++;
+			}
 			else
 				ft_printf("Status: %sFREE%s\n", COLOR_LIGHT_GREEN, COLOR_NC);
 			ft_printf("Size: %lu\n", current_chunk->size);
 
 			if (current_chunk->allocated == true) {
-				ft_printf("%s~~~~~~~~~~~ DATA ~~~~~~~~~~~%s\n", COLOR_LIGHT_CYAN, COLOR_NC);
+				ft_printf("\n%s~~~~~~~~~~~ DATA ~~~~~~~~~~~%s\n", COLOR_LIGHT_CYAN, COLOR_NC);
 				ft_print_memory((void *)align((uint64_t)current_chunk + sizeof(t_tinychunk)), current_chunk->size);
 				ft_printf("\n");
 			}
@@ -41,8 +43,13 @@ void	show_alloc_mem_ex() {
 
 	uint64_t total_allocations = 0;
 
-	printTiny();
+	printTiny(&total_allocations);
 
-	if (total_allocations == 0)
+	if (total_allocations == 0) {
 		ft_printf("--> NO HEAP ALLOCATIONS FOUND <--\n\n");
+		return ;
+	}
+
+	ft_printf("%lu allocation%s found\n", total_allocations, total_allocations == 1 ? "" : "s");
+
 }

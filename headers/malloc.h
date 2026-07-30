@@ -28,7 +28,7 @@ struct s_zone
 typedef struct s_tinychunk	t_tinychunk;
 struct s_tinychunk
 {
-	uint8_t	size;
+	uint64_t	size;
 	bool	allocated;
 };
 
@@ -67,10 +67,11 @@ t_zone*	newZone(size_t size);
 
 // Chunk
 void*			getFirstChunk(t_zone* zone);
+void*			claimTinyChunk(t_tinychunk* chunk, size_t size);
 t_tinychunk*	findTinySpace(size_t size, t_zone** zone);
 t_tinychunk*	findTinySpaceInZone(size_t size, t_zone* zone);
 
-void	*malloc(size_t size);
+void	*MyMalloc(size_t size);
 void	*realloc(void *ptr, size_t size);
 void	free(void *ptr);
 

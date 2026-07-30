@@ -8,7 +8,7 @@ void*	tinyAlloc(size_t size)
 	t_tinychunk*	chunk = findTinySpace(size, &zone);
 
 	if (chunk)
-		return ((void *)align((uint64_t)chunk + sizeof(t_tinychunk)));
+		return (claimTinyChunk(chunk, size));
 
 	zone = newZone(size);
 	if (!zone)
@@ -19,12 +19,12 @@ void*	tinyAlloc(size_t size)
 		return (NULL);
 
 	zone->amount++;
-	zone->used += align(sizeof(t_tinychunk) + MALLOC_SMALL_SIZE_LIMIT);
+	zone->used += align(sizeof(t_tinychunk) + MALLOC_TINY_SIZE_LIMIT);
 
-	return ((void *)align((uint64_t)chunk + sizeof(t_tinychunk)));
+	return (claimTinyChunk(chunk, size));
 }
 
-void*	malloc(size_t size) {
+void*	MyMalloc(size_t size) {
 	if (size <= MALLOC_TINY_SIZE_LIMIT)
 		return (tinyAlloc(size));
 	return (NULL);
