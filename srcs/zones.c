@@ -23,6 +23,8 @@ void	insertZone(t_zone* zone_ptr, t_zone** zone_list) {
 		zone_ptr->previous = zoneEmplacement;
 		if (zoneEmplacement->next)
 			zoneEmplacement->next->previous = zone_ptr;
+		else
+			(*zone_list)->previous = zone_ptr;
 		zoneEmplacement->next = zone_ptr;
 	}
 }

@@ -1,14 +1,16 @@
 #include "malloc.h"
 
 static void	printTiny(uint64_t* total_bytes) {
-	t_zone*		current_zone = malloc_singleton.tiny;
-
-	if (!current_zone)
+	if (!malloc_singleton.tiny)
 		return ;
+
+	t_zone*		first_zone = malloc_singleton.tiny->previous;
+	t_zone*		current_zone = first_zone;
+	uint64_t	zone_index = 1;
 
 	ft_printf("TINY : %p\n", current_zone);
 
-	while (current_zone) {
+	while (current_zone != first_zone || zone_index == 1) {
 		t_tinychunk*	current_chunk = getFirstChunk(current_zone);
 		t_tinychunk*	zone_limit = (void *)(current_chunk) + current_zone->size;
 		uint64_t		chunk_size = align(sizeof(t_tinychunk) + MALLOC_TINY_SIZE_LIMIT);
@@ -21,19 +23,23 @@ static void	printTiny(uint64_t* total_bytes) {
 			}
 			current_chunk = (t_tinychunk *)((uint64_t)current_chunk + chunk_size);
 		}
-		current_zone = current_zone->next;
+
+		zone_index++;
+		current_zone = current_zone->previous;
 	}
 }
 
 void	printLarge(uint64_t* total_bytes) {
-	t_zone*		current_zone = malloc_singleton.large;
-
-	if (!current_zone)
+	if (!malloc_singleton.large)
 		return ;
 
-	ft_printf("LARGE : %p\n", current_zone);
+	t_zone*		first_zone = malloc_singleton.large->previous;
+	t_zone*		current_zone = first_zone;
+	uint64_t	zone_index = 1;
 
-	while (current_zone) {
+	ft_printf("LARGE : %p\n", first_zone);
+
+	while (current_zone != first_zone || zone_index == 1) {
 		t_largechunk* current_chunk = getFirstChunk(current_zone);
 
 		(*total_bytes) += current_zone->used;
@@ -42,7 +48,8 @@ void	printLarge(uint64_t* total_bytes) {
 			ft_printf("%p — %p : %lu byte%s\n", (uint64_t)getLargeChunkData(current_chunk), (uint64_t)getLargeChunkData(current_chunk) + current_chunk->size, current_chunk->size, current_chunk->size == 1 ? "" : "s");
 		}
 
-		current_zone = current_zone->next;
+		zone_index++;
+		current_zone = current_zone->previous;
 	}
 }
 
