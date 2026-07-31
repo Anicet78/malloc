@@ -22,8 +22,21 @@ void*	tinyAlloc(size_t size)
 }
 
 void*	smallAlloc(size_t size) {
-	(void) size;
-	return (NULL);
+	t_zone*			zone;
+	t_smallchunk*	chunk = findSmallSpace(size, &zone);
+
+	if (chunk)
+		return (claimSmallChunk(zone, chunk, size));
+
+	zone = newZone(size);
+	if (!zone)
+		return (NULL);
+
+	chunk = findSmallSpaceInZone(size, zone);
+	if (!chunk)
+		return (NULL);
+
+	return (claimSmallChunk(zone, chunk, size));
 }
 
 void*	largeAlloc(size_t size) {
@@ -39,7 +52,7 @@ void*	largeAlloc(size_t size) {
 void*	MyMalloc(size_t size) {
 	if (size <= MALLOC_TINY_SIZE_LIMIT)
 		return (tinyAlloc(size));
-	// else if (size <= MALLOC_SMALL_SIZE_LIMIT)
-	// 	return (smallAlloc(size));
+	else if (size <= MALLOC_SMALL_SIZE_LIMIT)
+		return (smallAlloc(size));
 	return (largeAlloc(size));
 }

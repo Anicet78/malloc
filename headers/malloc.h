@@ -30,7 +30,7 @@ typedef struct s_tinychunk	t_tinychunk;
 struct s_tinychunk
 {
 	uint64_t	size;
-	bool	allocated;
+	bool		allocated;
 };
 
 typedef struct s_smallchunk	t_smallchunk;
@@ -72,6 +72,10 @@ void*			getTinyChunkData(t_tinychunk* chunk);
 void*			claimTinyChunk(t_zone* zone, t_tinychunk* chunk, size_t size);
 t_tinychunk*	findTinySpace(size_t size, t_zone** zone);
 t_tinychunk*	findTinySpaceInZone(size_t size, t_zone* zone);
+void*			getSmallChunkData(t_smallchunk* chunk);
+void*			claimSmallChunk(t_zone* zone, t_smallchunk* chunk, size_t size);
+t_smallchunk*	findSmallSpace(size_t size, t_zone** zone);
+t_smallchunk*	findSmallSpaceInZone(size_t size, t_zone* zone);
 void*			getLargeChunkData(t_largechunk* chunk);
 void*			claimLargeChunk(t_zone* zone, t_largechunk* chunk, size_t size);
 

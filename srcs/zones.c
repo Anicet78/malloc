@@ -49,7 +49,6 @@ t_zone*	tinyZone(uint64_t* zone_size) {
 		chunk = (t_tinychunk *)((uint64_t)chunk + chunk_size);
 	}
 
-
 	return (zone_ptr);
 }
 
@@ -63,10 +62,10 @@ t_zone*	smallZone(uint64_t* zone_size) {
 	insertZone(zone_ptr, &malloc_singleton.small);
 
 	t_smallchunk* chunk = getFirstChunk(zone_ptr);
-	chunk->allocated = false;
-	chunk->size = MALLOC_SMALL_ZONE_SIZE;
 	chunk->next = NULL;
 	chunk->previous = chunk;
+	chunk->size = 0;
+	chunk->allocated = false;
 
 	return (zone_ptr);
 }
@@ -95,8 +94,8 @@ t_zone*	newZone(size_t size) {
 
 	if (size <= MALLOC_TINY_SIZE_LIMIT)
 		zone_ptr = tinyZone(&zone_size);
-	// else if (size <= MALLOC_SMALL_SIZE_LIMIT)
-	// 	zone_ptr = smallZone(&zone_size);
+	else if (size <= MALLOC_SMALL_SIZE_LIMIT)
+		zone_ptr = smallZone(&zone_size);
 	else
 		zone_ptr = largeZone(size, &zone_size);
 

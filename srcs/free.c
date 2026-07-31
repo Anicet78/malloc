@@ -29,9 +29,66 @@ void	freeTiny(t_tinychunk* chunk) {
 		deleteZone(zone);
 		return ;
 	}
-	zone->reserved -= align(sizeof(t_tinychunk) + MALLOC_TINY_SIZE_LIMIT);
-	zone->used -= align(sizeof(t_tinychunk) + chunk->size);
+
+	zone->reserved -= align(sizeof(t_tinychunk)) + MALLOC_TINY_SIZE_LIMIT;
+	zone->used -= chunk->size;
 	zone->amount--;
+
+	chunk->size = 0;
+	chunk->allocated = false;
+}
+
+void	defragmentChunk(t_zone* zone, t_smallchunk* chunk) {
+	if (!chunk || chunk->previous >= chunk) {
+		return ;
+	}
+
+	t_smallchunk* prev_chunk = chunk->previous;
+
+	if (prev_chunk->allocated == true) {
+		if (align(prev_chunk->size) == (uint64_t)chunk)
+			return ;
+
+		t_smallchunk* new_chunk = (void *)align(prev_chunk->size);
+
+		prev_chunk->next = new_chunk;
+		if (chunk->next)
+			chunk->next->previous = new_chunk;
+		else
+			((t_smallchunk *)getFirstChunk(zone))->previous = new_chunk;
+
+		new_chunk->next = chunk->next;
+		new_chunk->previous = prev_chunk;
+	}
+	else {
+		if (chunk->next)
+			chunk->next->previous = prev_chunk;
+		else
+			((t_smallchunk *)getFirstChunk(zone))->previous = prev_chunk;
+
+		prev_chunk->next = chunk->next;
+	}
+}
+
+void	freeSmall(t_smallchunk* chunk) {
+	t_zone* zone = searchZone(chunk, malloc_singleton.small);
+	if (zone == NULL)
+		return ;
+
+	if (zone->amount <= 1) {
+		if (malloc_singleton.small == zone)
+			malloc_singleton.small = NULL;
+		deleteZone(zone);
+		return ;
+	}
+
+	zone->reserved -= align(sizeof(t_smallchunk));
+	zone->used -= chunk->size;
+	zone->amount--;
+
+	defragmentChunk(zone, chunk);
+	defragmentChunk(zone, chunk->next);
+
 
 	chunk->size = 0;
 	chunk->allocated = false;
@@ -52,8 +109,8 @@ void	MyFree(void* ptr) {
 
 	if (size <= MALLOC_TINY_SIZE_LIMIT)
 		freeTiny(ptr - align(sizeof(t_tinychunk)));
-	// else if (size <= MALLOC_SMALL_SIZE_LIMIT)
-	// 	smallAlloc(size);
+	else if (size <= MALLOC_SMALL_SIZE_LIMIT)
+		freeSmall(ptr - align(sizeof(t_smallchunk)));
 	else
 		freeLarge(ptr - align(sizeof(t_largechunk)));
 }
