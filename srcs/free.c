@@ -15,7 +15,7 @@ void	deleteZone(t_zone* zone) {
 	if (zone->next)
 		zone->next->previous = zone->previous;
 
-	munmap(zone, align(sizeof(t_zone) + zone->size));
+	munmap(zone, calcPageSize(align(sizeof(t_zone)) + zone->size));
 }
 
 void	freeTiny(t_tinychunk* chunk) {
@@ -49,7 +49,7 @@ void	defragmentChunk(t_zone* zone, t_smallchunk* chunk) {
 		if (align(prev_chunk->size) == (uint64_t)chunk)
 			return ;
 
-		t_smallchunk* new_chunk = (void *)align(prev_chunk->size);
+		t_smallchunk* new_chunk = getSmallChunkData(prev_chunk) + align(prev_chunk->size);
 
 		prev_chunk->next = new_chunk;
 		if (chunk->next)
@@ -104,7 +104,7 @@ void	freeLarge(t_largechunk* chunk) {
 	deleteZone(zone);
 }
 
-void	MyFree(void* ptr) {
+void	free(void* ptr) {
 	uint64_t size = *(uint64_t *)(ptr - ALIGNMENT);
 
 	if (size <= MALLOC_TINY_SIZE_LIMIT)

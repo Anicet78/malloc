@@ -30,7 +30,7 @@ void	insertZone(t_zone* zone_ptr, t_zone** zone_list) {
 }
 
 t_zone*	tinyZone(uint64_t* zone_size) {
-	*zone_size = calcPageSize(align(sizeof(t_zone) + sizeof(t_tinychunk) + MALLOC_TINY_ZONE_SIZE));
+	*zone_size = calcPageSize(align(sizeof(t_zone) + MALLOC_TINY_ZONE_SIZE));
 
 	t_zone*	zone_ptr = newRawPage(*zone_size);
 	if (!zone_ptr)
@@ -53,7 +53,7 @@ t_zone*	tinyZone(uint64_t* zone_size) {
 }
 
 t_zone*	smallZone(uint64_t* zone_size) {
-	*zone_size = calcPageSize(align(sizeof(t_zone) + sizeof(t_smallchunk) + MALLOC_SMALL_ZONE_SIZE));
+	*zone_size = calcPageSize(align(sizeof(t_zone) + MALLOC_SMALL_ZONE_SIZE));
 
 	t_zone*	zone_ptr = newRawPage(*zone_size);
 	if (!zone_ptr)

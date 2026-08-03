@@ -123,6 +123,16 @@ t_smallchunk*	findSmallSpaceInZone(size_t size, t_zone* zone) {
 				return (current_chunk);
 			}
 		}
+		else if (!current_chunk->next && getSmallChunkData(current_chunk->previous) + align(current_chunk->previous->size) < getFirstChunk(zone) + zone->size + align(sizeof(t_smallchunk)) + align(size)) {
+			t_smallchunk* new_chunk = getSmallChunkData(current_chunk->previous) + align(current_chunk->previous->size);
+
+			current_chunk->next = new_chunk;
+			new_chunk->next = NULL;
+			new_chunk->previous = current_chunk;
+			new_chunk->allocated = false;
+			new_chunk->size = 0;
+		}
+
 		current_chunk = current_chunk->next;
 	}
 

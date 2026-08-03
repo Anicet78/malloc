@@ -80,10 +80,10 @@ void*			getLargeChunkData(t_largechunk* chunk);
 void*			claimLargeChunk(t_zone* zone, t_largechunk* chunk, size_t size);
 
 // void	*malloc(size_t size);
-void	*MyMalloc(size_t size);
+void	*malloc(size_t size);
 void	*realloc(void *ptr, size_t size);
 // void	free(void *ptr);
-void	MyFree(void* ptr);
+void	free(void* ptr);
 
 void	show_alloc_mem();
 void	show_alloc_mem_ex();

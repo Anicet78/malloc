@@ -23,6 +23,6 @@ void*	newRawPage(size_t size) {
 	if (ptr == MAP_FAILED)
 		return (NULL);
 
-	ft_printf("New page created: [%p - %p] (%lu bytes)\n", ptr, ptr + size - 1, size);
+	// ft_printf("New page created: [%p - %p] (%lu bytes)\n", ptr, ptr + size - 1, size);
 	return (ptr);
 }

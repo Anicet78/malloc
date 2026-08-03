@@ -49,7 +49,7 @@ void*	largeAlloc(size_t size) {
 	return (claimLargeChunk(zone, chunk, size));
 }
 
-void*	MyMalloc(size_t size) {
+void*	malloc(size_t size) {
 	if (size <= MALLOC_TINY_SIZE_LIMIT)
 		return (tinyAlloc(size));
 	else if (size <= MALLOC_SMALL_SIZE_LIMIT)

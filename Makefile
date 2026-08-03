@@ -13,7 +13,7 @@ CFLAGS		+= -I$(HEADERS)
 SRC			= chunks.c free.c malloc.c pages.c show.c show_ex.c zones.c
 OBJ			= $(patsubst %.c, $(OBJ_DIR)/%.o, $(SRC))
 
-TEST_SRC	= test2.c
+TEST_SRC	= test.c
 TEST_OBJ	= $(patsubst %.c, $(OBJ_DIR)/%.o, $(TEST_SRC))
 TEST_NAME	= test_bin
 
