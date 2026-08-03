@@ -1,5 +1,15 @@
 #include "malloc.h"
 
+t_zone*	searchZone(void* ptr, t_zone* zone) {
+	if (!zone)
+		return (NULL);
+
+	while (ptr > (void *)zone && zone->next)
+		zone = zone->next;
+
+	return (zone);
+}
+
 t_zone*	lowerBound(t_zone* zone_ptr, t_zone* zone_list) {
 	while (zone_list->next && zone_list < zone_ptr) {
 		zone_list = zone_list->next;

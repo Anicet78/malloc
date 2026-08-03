@@ -27,6 +27,7 @@ all: $(NAME)
 
 $(NAME): $(LIBFT) $(OBJ)
 	$(CC) $(CFLAGS) -shared $(OBJ) $(LIBFT) -o $(NAME)
+	@ln -s $(NAME) libft_malloc.so
 
 $(LIBFT):
 	@make -sC $(LIBFT_DIR)

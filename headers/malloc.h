@@ -64,6 +64,7 @@ size_t	align(size_t size);
 size_t	calcPageSize(size_t size);
 
 // Zone
+t_zone*	searchZone(void* ptr, t_zone* zone);
 t_zone*	newZone(size_t size);
 
 // Chunk
@@ -79,10 +80,8 @@ t_smallchunk*	findSmallSpaceInZone(size_t size, t_zone* zone);
 void*			getLargeChunkData(t_largechunk* chunk);
 void*			claimLargeChunk(t_zone* zone, t_largechunk* chunk, size_t size);
 
-// void	*malloc(size_t size);
 void	*malloc(size_t size);
 void	*realloc(void *ptr, size_t size);
-// void	free(void *ptr);
 void	free(void* ptr);
 
 void	show_alloc_mem();

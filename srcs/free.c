@@ -1,15 +1,5 @@
 #include "malloc.h"
 
-t_zone*	searchZone(void* ptr, t_zone* zone) {
-	if (!zone)
-		return (NULL);
-
-	while (ptr > (void *)zone && zone->next)
-		zone = zone->next;
-
-	return (zone);
-}
-
 void	deleteZone(t_zone* zone) {
 	zone->previous->next = zone->next;
 	if (zone->next)
@@ -105,6 +95,9 @@ void	freeLarge(t_largechunk* chunk) {
 }
 
 void	free(void* ptr) {
+	if (ptr == NULL)
+		return ;
+
 	uint64_t size = *(uint64_t *)(ptr - ALIGNMENT);
 
 	if (size <= MALLOC_TINY_SIZE_LIMIT)
