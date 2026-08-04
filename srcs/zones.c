@@ -66,6 +66,8 @@ t_zone*	smallZone(uint64_t* zone_size) {
 	chunk->size = packVariables(0, false);
 	chunk->zone = zone_ptr;
 
+	*zone_size -= (uint64_t)chunk - (uint64_t)zone_ptr;
+
 	return (zone_ptr);
 }
 
@@ -79,7 +81,7 @@ t_zone*	largeZone(size_t size, uint64_t* zone_size) {
 	insertZone(zone_ptr, &malloc_singleton.large);
 
 	t_largechunk* chunk = getFirstChunk(zone_ptr);
-	chunk->size = 0;
+	chunk->size = setSize(chunk->size, size);
 	chunk->zone = zone_ptr;
 
 	*zone_size -= (uint64_t)chunk - (uint64_t)zone_ptr;

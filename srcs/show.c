@@ -71,7 +71,7 @@ void	printLarge(uint64_t* total_bytes) {
 
 		(*total_bytes) += current_zone->used;
 
-		ft_printf("%p — %p : %lu byte%s\n", (uint64_t)getLargeChunkData(current_chunk), (uint64_t)getLargeChunkData(current_chunk) + current_chunk->size, current_chunk->size, current_chunk->size == 1 ? "" : "s");
+		ft_printf("%p — %p : %lu byte%s\n", (uint64_t)getLargeChunkData(current_chunk), (uint64_t)getLargeChunkData(current_chunk) + getSize(current_chunk->size), getSize(current_chunk->size), getSize(current_chunk->size) == 1 ? "" : "s");
 
 		zone_index++;
 		current_zone = current_zone->previous;
@@ -87,5 +87,5 @@ void	show_alloc_mem() {
 	printSmall(&total_bytes);
 	printLarge(&total_bytes);
 
-	ft_printf("Total : %lu byte%s\n", total_bytes, total_bytes <= 1 ? "" : "s");
+	ft_printf("Total : %lu byte%s\n\n", total_bytes, total_bytes <= 1 ? "" : "s");
 }

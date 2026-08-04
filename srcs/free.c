@@ -90,7 +90,7 @@ void	free(void* ptr) {
 	if (ptr == NULL)
 		return ;
 
-	uint64_t size = *(uint64_t *)(ptr - ALIGNMENT);
+	uint64_t size = getSize(*(uint64_t *)(ptr - ALIGNMENT));
 
 	if (size <= MALLOC_TINY_SIZE_LIMIT)
 		freeTiny(ptr - align(sizeof(t_tinychunk)));

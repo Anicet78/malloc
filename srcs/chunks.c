@@ -178,7 +178,7 @@ void*	getLargeChunkData(t_largechunk* chunk) {
 }
 
 void*	claimLargeChunk(t_zone* zone, t_largechunk* chunk, size_t size) {
-	chunk->size = size;
+	chunk->size = packVariables(size, true);
 	chunk->zone = zone;
 
 	zone->reserved = zone->size;
