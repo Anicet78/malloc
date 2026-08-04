@@ -18,8 +18,8 @@ static void	printTiny(uint64_t* total_bytes) {
 		(*total_bytes) += current_zone->used;
 
 		while (current_chunk < zone_limit) {
-			if (current_chunk->allocated == true) {
-				ft_printf("%p — %p : %lu byte%s\n", (uint64_t)getTinyChunkData(current_chunk), (uint64_t)getTinyChunkData(current_chunk) + current_chunk->size, current_chunk->size, current_chunk->size == 1 ? "" : "s");
+			if (isAllocated(current_chunk->size)) {
+				ft_printf("%p — %p : %lu byte%s\n", (uint64_t)getTinyChunkData(current_chunk), (uint64_t)getTinyChunkData(current_chunk) + getSize(current_chunk->size), getSize(current_chunk->size), getSize(current_chunk->size) == 1 ? "" : "s");
 			}
 			current_chunk = (t_tinychunk *)((uint64_t)current_chunk + chunk_size);
 		}
@@ -45,8 +45,8 @@ static void	printSmall(uint64_t* total_bytes) {
 		(*total_bytes) += current_zone->used;
 
 		while (current_chunk) {
-			if (current_chunk->allocated == true) {
-				ft_printf("%p — %p : %lu byte%s\n", (uint64_t)getSmallChunkData(current_chunk), (uint64_t)getSmallChunkData(current_chunk) + current_chunk->size, current_chunk->size, current_chunk->size == 1 ? "" : "s");
+			if (isAllocated(current_chunk->size)) {
+				ft_printf("%p — %p : %lu byte%s\n", (uint64_t)getSmallChunkData(current_chunk), (uint64_t)getSmallChunkData(current_chunk) + getSize(current_chunk->size), getSize(current_chunk->size), getSize(current_chunk->size) == 1 ? "" : "s");
 			}
 			current_chunk = current_chunk->next;
 		}
@@ -71,9 +71,7 @@ void	printLarge(uint64_t* total_bytes) {
 
 		(*total_bytes) += current_zone->used;
 
-		if (current_chunk->allocated == true) {
-			ft_printf("%p — %p : %lu byte%s\n", (uint64_t)getLargeChunkData(current_chunk), (uint64_t)getLargeChunkData(current_chunk) + current_chunk->size, current_chunk->size, current_chunk->size == 1 ? "" : "s");
-		}
+		ft_printf("%p — %p : %lu byte%s\n", (uint64_t)getLargeChunkData(current_chunk), (uint64_t)getLargeChunkData(current_chunk) + current_chunk->size, current_chunk->size, current_chunk->size == 1 ? "" : "s");
 
 		zone_index++;
 		current_zone = current_zone->previous;

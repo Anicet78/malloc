@@ -19,12 +19,12 @@ static void	printTiny(uint64_t* total_allocations) {
 		while (current_chunk < zone_limit) {
 			ft_printf("%s########## CHUNK ###########%s\n", COLOR_LIGHT_BLUE, COLOR_NC);
 
-			if (current_chunk->allocated == true) {
+			if (isAllocated(current_chunk->size)) {
 				ft_printf("Status: %sALLOCATED%s\n",COLOR_LIGHT_RED, COLOR_NC);
 				(*total_allocations)++;
-				ft_printf("Size: %lu\n", current_chunk->size);
+				ft_printf("Size: %lu\n", getSize(current_chunk->size));
 				ft_printf("%s~~~~~~~~~~~ DATA ~~~~~~~~~~~%s\n", COLOR_LIGHT_GRAY, COLOR_NC);
-				ft_print_memory((void *)align((uint64_t)current_chunk + sizeof(t_tinychunk)), current_chunk->size);
+				ft_print_memory((void *)align((uint64_t)current_chunk + sizeof(t_tinychunk)), getSize(current_chunk->size));
 				ft_printf("\n");
 			}
 			else {

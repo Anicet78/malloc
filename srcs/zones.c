@@ -1,15 +1,5 @@
 #include "malloc.h"
 
-t_zone*	searchZone(void* ptr, t_zone* zone) {
-	if (!zone)
-		return (NULL);
-
-	while (ptr > (void *)zone && zone->next)
-		zone = zone->next;
-
-	return (zone);
-}
-
 t_zone*	lowerBound(t_zone* zone_ptr, t_zone* zone_list) {
 	while (zone_list->next && zone_list < zone_ptr) {
 		zone_list = zone_list->next;
@@ -54,8 +44,7 @@ t_zone*	tinyZone(uint64_t* zone_size) {
 	*zone_size -= (uint64_t)chunk - (uint64_t)zone_ptr;
 
 	while (chunk < zone_limit) {
-		chunk->allocated = false;
-		chunk->size = 0;
+		chunk->size = packVariables(0, false);
 		chunk = (t_tinychunk *)((uint64_t)chunk + chunk_size);
 	}
 
@@ -74,8 +63,8 @@ t_zone*	smallZone(uint64_t* zone_size) {
 	t_smallchunk* chunk = getFirstChunk(zone_ptr);
 	chunk->next = NULL;
 	chunk->previous = chunk;
-	chunk->size = 0;
-	chunk->allocated = false;
+	chunk->size = packVariables(0, false);
+	chunk->zone = zone_ptr;
 
 	return (zone_ptr);
 }
@@ -90,8 +79,8 @@ t_zone*	largeZone(size_t size, uint64_t* zone_size) {
 	insertZone(zone_ptr, &malloc_singleton.large);
 
 	t_largechunk* chunk = getFirstChunk(zone_ptr);
-	chunk->allocated = false;
 	chunk->size = 0;
+	chunk->zone = zone_ptr;
 
 	*zone_size -= (uint64_t)chunk - (uint64_t)zone_ptr;
 

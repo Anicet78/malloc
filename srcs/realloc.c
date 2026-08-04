@@ -46,9 +46,7 @@ void*	growSmall(t_smallchunk* chunk, size_t size, size_t old_size) {
 	}
 
 	if (!chunk->next) {
-		t_zone* zone = searchZone(chunk, malloc_singleton.small);
-		if (!zone)
-			return (free(getSmallChunkData(chunk)), NULL);
+		t_zone* zone = chunk->zone;
 
 		if ((getFirstChunk(zone) + zone->size) - (uint64_t)getSmallChunkData(chunk) < size) {
 			void* newAlloc = malloc(size);
@@ -64,9 +62,7 @@ void*	growSmall(t_smallchunk* chunk, size_t size, size_t old_size) {
 }
 
 void*	growLarge(t_largechunk* chunk, size_t size, size_t old_size) {
-	t_zone* zone = searchZone(chunk, malloc_singleton.large);
-	if (!zone)
-		return (free(getLargeChunkData(chunk)), NULL);
+	t_zone* zone = chunk->zone;
 
 	if (size > zone->size) {
 		void* newAlloc = malloc(size * 2);
@@ -77,10 +73,7 @@ void*	growLarge(t_largechunk* chunk, size_t size, size_t old_size) {
 		t_largechunk* newChunk = newAlloc - align(sizeof(t_largechunk));
 		newChunk->size = size;
 
-		t_zone* newZone = searchZone(newChunk, malloc_singleton.large);
-		if (!newZone)
-			return (free(getLargeChunkData(newChunk)), NULL);
-		newZone->used = size;
+		newChunk->zone->used = size;
 
 		return (newAlloc);
 	}

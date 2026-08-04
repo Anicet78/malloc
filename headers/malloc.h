@@ -30,7 +30,7 @@ typedef struct s_tinychunk	t_tinychunk;
 struct s_tinychunk
 {
 	uint64_t	size;
-	bool		allocated;
+	t_zone*		zone;
 };
 
 typedef struct s_smallchunk	t_smallchunk;
@@ -39,21 +39,23 @@ struct s_smallchunk
 	t_smallchunk*	next;
 	t_smallchunk*	previous;
 	uint64_t		size;
-	bool			allocated;
+	t_zone*			zone;
 };
 
 typedef struct s_largechunk	t_largechunk;
 struct s_largechunk
 {
 	uint64_t	size;
-	bool		allocated;
+	t_zone*		zone;
 };
 
 typedef struct s_allocator
 {
-	t_zone*	tiny;
-	t_zone*	small;
-	t_zone*	large;
+	t_zone*		tiny;
+	t_zone*		small;
+	t_zone*		large;
+	uint64_t	allocations;
+	uint64_t	free;
 }	t_allocator;
 
 extern t_allocator malloc_singleton;
@@ -64,10 +66,14 @@ size_t	align(size_t size);
 size_t	calcPageSize(size_t size);
 
 // Zone
-t_zone*	searchZone(void* ptr, t_zone* zone);
 t_zone*	newZone(size_t size);
 
 // Chunk
+bool			isAllocated(uint64_t size);
+uint64_t		getSize(uint64_t size);
+uint64_t		packVariables(uint64_t size, bool allocated);
+uint64_t		setAllocated(uint64_t size, bool allocated);
+uint64_t		setSize(uint64_t size, uint64_t value);
 void*			getFirstChunk(t_zone* zone);
 void*			getTinyChunkData(t_tinychunk* chunk);
 void*			claimTinyChunk(t_zone* zone, t_tinychunk* chunk, size_t size);

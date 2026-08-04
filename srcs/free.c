@@ -9,9 +9,7 @@ void	deleteZone(t_zone* zone) {
 }
 
 void	freeTiny(t_tinychunk* chunk) {
-	t_zone* zone = searchZone(chunk, malloc_singleton.tiny);
-	if (zone == NULL)
-		return ;
+	t_zone* zone = chunk->zone;
 
 	if (zone->amount <= 1) {
 		if (malloc_singleton.tiny == zone)
@@ -21,11 +19,10 @@ void	freeTiny(t_tinychunk* chunk) {
 	}
 
 	zone->reserved -= align(sizeof(t_tinychunk)) + MALLOC_TINY_SIZE_LIMIT;
-	zone->used -= chunk->size;
+	zone->used -= getSize(chunk->size);
 	zone->amount--;
 
-	chunk->size = 0;
-	chunk->allocated = false;
+	chunk->size = packVariables(0, false);
 }
 
 void	defragmentChunk(t_zone* zone, t_smallchunk* chunk) {
@@ -35,11 +32,11 @@ void	defragmentChunk(t_zone* zone, t_smallchunk* chunk) {
 
 	t_smallchunk* prev_chunk = chunk->previous;
 
-	if (prev_chunk->allocated == true) {
-		if (align(prev_chunk->size) == (uint64_t)chunk)
+	if (isAllocated(prev_chunk->size)) {
+		if (align(getSize(prev_chunk->size)) == (uint64_t)chunk)
 			return ;
 
-		t_smallchunk* new_chunk = getSmallChunkData(prev_chunk) + align(prev_chunk->size);
+		t_smallchunk* new_chunk = getSmallChunkData(prev_chunk) + align(getSize(prev_chunk->size));
 
 		prev_chunk->next = new_chunk;
 		if (chunk->next)
@@ -49,6 +46,7 @@ void	defragmentChunk(t_zone* zone, t_smallchunk* chunk) {
 
 		new_chunk->next = chunk->next;
 		new_chunk->previous = prev_chunk;
+		new_chunk->zone = zone;
 	}
 	else {
 		if (chunk->next)
@@ -61,9 +59,7 @@ void	defragmentChunk(t_zone* zone, t_smallchunk* chunk) {
 }
 
 void	freeSmall(t_smallchunk* chunk) {
-	t_zone* zone = searchZone(chunk, malloc_singleton.small);
-	if (zone == NULL)
-		return ;
+	t_zone* zone = chunk->zone;
 
 	if (zone->amount <= 1) {
 		if (malloc_singleton.small == zone)
@@ -73,21 +69,17 @@ void	freeSmall(t_smallchunk* chunk) {
 	}
 
 	zone->reserved -= align(sizeof(t_smallchunk));
-	zone->used -= chunk->size;
+	zone->used -= getSize(chunk->size);
 	zone->amount--;
 
 	defragmentChunk(zone, chunk);
 	defragmentChunk(zone, chunk->next);
 
-
-	chunk->size = 0;
-	chunk->allocated = false;
+	chunk->size = packVariables(0, false);
 }
 
 void	freeLarge(t_largechunk* chunk) {
-	t_zone* zone = searchZone(chunk, malloc_singleton.large);
-	if (zone == NULL)
-		return ;
+	t_zone* zone = chunk->zone;
 
 	if (malloc_singleton.large == zone)
 		malloc_singleton.large = NULL;
