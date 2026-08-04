@@ -63,7 +63,29 @@ void*	growSmall(t_smallchunk* chunk, size_t size, size_t old_size) {
 	return (chunk);
 }
 
-void*	growLarge(t_largechunk* chunk, size_t size) {
+void*	growLarge(t_largechunk* chunk, size_t size, size_t old_size) {
+	t_zone* zone = searchZone(chunk, malloc_singleton.large);
+	if (!zone)
+		return (free(getLargeChunkData(chunk)), NULL);
+
+	if (size > zone->size) {
+		void* newAlloc = malloc(size * 2);
+		if (newAlloc)
+			ft_memcpy(newAlloc, getLargeChunkData(chunk), old_size);
+		free(getLargeChunkData(chunk));
+
+		t_largechunk* newChunk = newAlloc - align(sizeof(t_largechunk));
+		newChunk->size = size;
+
+		t_zone* newZone = searchZone(newChunk, malloc_singleton.large);
+		if (!newZone)
+			return (free(getLargeChunkData(newChunk)), NULL);
+		newZone->used = size;
+
+		return (newAlloc);
+	}
+
+	chunk->size = size;
 	return (chunk);
 }
 
