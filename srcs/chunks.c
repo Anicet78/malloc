@@ -1,30 +1,30 @@
 #include <malloc.h>
 
-void*	getFirstChunk(t_zone* zone) {
+inline void*	getFirstChunk(t_zone* zone) {
 	return ((void *)align((uint64_t)zone + sizeof(t_zone)));
 }
 
-bool	isAllocated(uint64_t size) {
+inline bool	isAllocated(uint64_t size) {
 	return (size & 1);
 }
 
-uint64_t	getSize(uint64_t size) {
+inline uint64_t	getSize(uint64_t size) {
 	return (size >> 1);
 }
 
-uint64_t	packVariables(uint64_t size, bool allocated) {
+inline uint64_t	packVariables(uint64_t size, bool allocated) {
 	return (size << 1) | (allocated & 1);
 }
 
-uint64_t	setAllocated(uint64_t size, bool allocated) {
+inline uint64_t	setAllocated(uint64_t size, bool allocated) {
 	return (size & ~1) | (allocated & 1);
 }
 
-uint64_t	setSize(uint64_t size, uint64_t value) {
+inline uint64_t	setSize(uint64_t size, uint64_t value) {
 	return (size & 1) | (value << 1);
 }
 
-void*	getTinyChunkData(t_tinychunk* chunk) {
+inline void*	getTinyChunkData(t_tinychunk* chunk) {
 	return ((void *)align((uint64_t)chunk + sizeof(t_tinychunk)));
 }
 
@@ -74,7 +74,7 @@ t_tinychunk*	findTinySpace(size_t size, t_zone** zone) {
 	return (NULL);
 }
 
-void*	getSmallChunkData(t_smallchunk* chunk) {
+inline void*	getSmallChunkData(t_smallchunk* chunk) {
 	return ((void *)align((uint64_t)chunk + sizeof(t_smallchunk)));
 }
 
@@ -173,7 +173,7 @@ t_smallchunk*	findSmallSpace(size_t size, t_zone** zone) {
 	return (NULL);
 }
 
-void*	getLargeChunkData(t_largechunk* chunk) {
+inline void*	getLargeChunkData(t_largechunk* chunk) {
 	return ((void *)align((uint64_t)chunk + sizeof(t_largechunk)));
 }
 

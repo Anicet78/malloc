@@ -1,6 +1,6 @@
 #include <malloc.h>
 
-size_t align(size_t size) {
+inline size_t align(size_t size) {
 	return (size + (ALIGNMENT - 1)) & ~(ALIGNMENT - 1);
 }
 
