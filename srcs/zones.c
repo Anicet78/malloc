@@ -1,12 +1,9 @@
 #include "malloc.h"
 
 t_zone*	lowerBound(t_zone* zone_ptr, t_zone* zone_list) {
-	while (zone_list->next && zone_list < zone_ptr) {
+	while (zone_list->next && zone_list->next < zone_ptr) {
 		zone_list = zone_list->next;
 	}
-
-	if (zone_list->next)
-		return zone_list->previous;
 
 	return (zone_list);
 }
