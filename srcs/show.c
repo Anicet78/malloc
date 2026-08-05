@@ -56,7 +56,7 @@ static void	printSmall(uint64_t* total_bytes) {
 	}
 }
 
-void	printLarge(uint64_t* total_bytes) {
+static void	printLarge(uint64_t* total_bytes) {
 	if (!malloc_singleton.large)
 		return ;
 
