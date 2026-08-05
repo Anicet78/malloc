@@ -76,7 +76,7 @@ void*	growLarge(t_largechunk* chunk, size_t size, size_t old_size) {
 		free(getLargeChunkData(chunk));
 
 		t_largechunk* newChunk = newAlloc - align(sizeof(t_largechunk));
-		chunk->size = setSize(chunk->size, size);
+		newChunk->size = setSize(newChunk->size, size);
 		newChunk->zone->used = size;
 
 		return (newAlloc);
