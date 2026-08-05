@@ -26,35 +26,37 @@ void	freeTiny(t_tinychunk* chunk) {
 }
 
 void	defragmentChunk(t_zone* zone, t_smallchunk* chunk) {
-	if (!chunk || chunk->previous >= chunk) {
+	if (!chunk->next) {
 		return ;
 	}
 
-	t_smallchunk* prev_chunk = chunk->previous;
+	t_smallchunk* next_chunk = chunk->next;
 
-	if (isAllocated(prev_chunk->size)) {
-		if (align(getSize(prev_chunk->size)) == (uint64_t)chunk)
+	if (isAllocated(next_chunk->size)) {
+		return ;
+	}
+
+	if (isAllocated(chunk->size)) {
+		if ((uint64_t)getSmallChunkData(chunk) + (uint64_t)align(getSize(chunk->size)) == (uint64_t)next_chunk)
 			return ;
 
-		t_smallchunk* new_chunk = getSmallChunkData(prev_chunk) + align(getSize(prev_chunk->size));
+		t_smallchunk* new_chunk = getSmallChunkData(chunk) + align(getSize(chunk->size));
 
-		prev_chunk->next = new_chunk;
-		if (chunk->next)
-			chunk->next->previous = new_chunk;
+		chunk->next = new_chunk;
+		if (next_chunk->next)
+			next_chunk->next->previous = new_chunk;
 		else
 			((t_smallchunk *)getFirstChunk(zone))->previous = new_chunk;
 
-		new_chunk->next = chunk->next;
-		new_chunk->previous = prev_chunk;
+		new_chunk->next = next_chunk->next;
+		new_chunk->previous = chunk;
 		new_chunk->zone = zone;
+		new_chunk->size = packVariables(0, false);
 	}
 	else {
-		if (chunk->next)
-			chunk->next->previous = prev_chunk;
-		else
-			((t_smallchunk *)getFirstChunk(zone))->previous = prev_chunk;
-
-		prev_chunk->next = chunk->next;
+		chunk->next = next_chunk->next;
+		if (next_chunk->next)
+			next_chunk->next->previous = chunk;
 	}
 }
 
@@ -68,12 +70,14 @@ void	freeSmall(t_smallchunk* chunk) {
 		return ;
 	}
 
-	zone->reserved -= align(sizeof(t_smallchunk));
+	zone->reserved -= (align(sizeof(t_smallchunk)) + align(getSize(chunk->size)));
 	zone->used -= getSize(chunk->size);
 	zone->amount--;
 
+	chunk->size = setAllocated(chunk->size, false);
+
 	defragmentChunk(zone, chunk);
-	defragmentChunk(zone, chunk->next);
+	defragmentChunk(zone, chunk->previous);
 
 	chunk->size = packVariables(0, false);
 }
