@@ -7,4 +7,7 @@ objs
 # Libs
 *.a
 *.so
+
+# Binaries
 test_bin
+a.out
