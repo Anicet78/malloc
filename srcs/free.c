@@ -1,9 +1,11 @@
 #include "malloc.h"
 
-void	deleteZone(t_zone* zone) {
+void	deleteZone(t_zone* zone, t_zone* zone_list) {
 	zone->previous->next = zone->next;
 	if (zone->next)
 		zone->next->previous = zone->previous;
+	else if (zone_list)
+		zone_list->previous = zone->previous;
 
 	munmap(zone, calcPageSize(align(sizeof(t_zone)) + zone->size));
 }
@@ -14,7 +16,7 @@ void	freeTiny(t_tinychunk* chunk) {
 	if (zone->amount <= 1) {
 		if (malloc_singleton.tiny == zone)
 			malloc_singleton.tiny = NULL;
-		deleteZone(zone);
+		deleteZone(zone, malloc_singleton.tiny);
 		return ;
 	}
 
@@ -66,7 +68,7 @@ void	freeSmall(t_smallchunk* chunk) {
 	if (zone->amount <= 1) {
 		if (malloc_singleton.small == zone)
 			malloc_singleton.small = NULL;
-		deleteZone(zone);
+		deleteZone(zone, malloc_singleton.small);
 		return ;
 	}
 
@@ -87,7 +89,7 @@ void	freeLarge(t_largechunk* chunk) {
 
 	if (malloc_singleton.large == zone)
 		malloc_singleton.large = NULL;
-	deleteZone(zone);
+	deleteZone(zone, malloc_singleton.large);
 }
 
 void	free(void* ptr) {
