@@ -10,6 +10,7 @@ void	deleteZone(t_zone* zone, t_zone** zone_list) {
 	if (*zone_list && !zone->next)
 		(*zone_list)->previous = zone->previous;
 
+	// ft_printf("Page deleted: [%p - %p] (%lu bytes)\n", zone, zone + align(sizeof(t_zone)) + zone->size, align(sizeof(t_zone)) + zone->size);
 	munmap(zone, calcPageSize(align(sizeof(t_zone)) + zone->size));
 }
 
@@ -91,11 +92,12 @@ void	free(void* ptr) {
 	if (ptr == NULL)
 		return ;
 
-	uint64_t size = getSize(*(uint64_t *)(ptr - ALIGNMENT));
+	t_zone*		zone = (t_zone *)(*(uint64_t *)(ptr - 8));
+	uint64_t	size = getSize(*(uint64_t *)(ptr - ALIGNMENT));
 
-	if (size <= MALLOC_TINY_SIZE_LIMIT)
+	if (size <= MALLOC_TINY_SIZE_LIMIT && zone->size < MALLOC_SMALL_ZONE_SIZE)
 		freeTiny(ptr - align(sizeof(t_tinychunk)));
-	else if (size <= MALLOC_SMALL_SIZE_LIMIT)
+	else if (size <= MALLOC_SMALL_SIZE_LIMIT && zone->size == calcPageSize(align(sizeof(t_zone) + MALLOC_SMALL_ZONE_SIZE)) - align(sizeof(t_zone)))
 		freeSmall(ptr - align(sizeof(t_smallchunk)));
 	else
 		freeLarge(ptr - align(sizeof(t_largechunk)));

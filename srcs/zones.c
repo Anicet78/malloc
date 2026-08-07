@@ -14,6 +14,12 @@ void	insertZone(t_zone* zone_ptr, t_zone** zone_list) {
 		zone_ptr->previous = zone_ptr;
 		zone_ptr->next = NULL;
 	}
+	else if (zone_ptr < *zone_list) {
+		zone_ptr->next = *zone_list;
+		zone_ptr->previous = (*zone_list)->previous;
+		(*zone_list)->previous = zone_ptr;
+		*zone_list = zone_ptr;
+	}
 	else {
 		t_zone* zoneEmplacement = lowerBound(zone_ptr, *zone_list);
 		zone_ptr->next = zoneEmplacement->next;

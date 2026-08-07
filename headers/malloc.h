@@ -9,11 +9,11 @@
 # define MALLOC_REQUIRED_SIZE sysconf(_SC_PAGESIZE)
 # define ALIGNMENT alignof(max_align_t)
 
-# define MALLOC_TINY_SIZE_LIMIT 64
-# define MALLOC_TINY_ZONE_SIZE  2048 // 32768
+# define MALLOC_TINY_SIZE_LIMIT  64
+# define MALLOC_TINY_ZONE_SIZE   32768
 
 # define MALLOC_SMALL_SIZE_LIMIT 16384
-# define MALLOC_SMALL_ZONE_SIZE 32768
+# define MALLOC_SMALL_ZONE_SIZE  65536
 
 typedef struct s_zone	t_zone;
 struct s_zone
