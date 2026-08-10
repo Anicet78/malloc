@@ -8,6 +8,7 @@ void*	shrinkTiny(t_tinychunk* chunk, size_t size, size_t old_size) {
 
 void*	shrinkSmall(t_smallchunk* chunk, size_t size, size_t old_size) {
 	chunk->size = setSize(chunk->size, size);
+	chunk->zone->reserved = chunk->zone->reserved - align(old_size) + align(size);
 	chunk->zone->used -= old_size - size;
 	return (getSmallChunkData(chunk));
 }
@@ -62,6 +63,7 @@ void*	growSmall(t_smallchunk* chunk, size_t size, size_t old_size) {
 	}
 
 	chunk->size = setSize(chunk->size, size);
+	chunk->zone->reserved = chunk->zone->reserved - align(old_size) + align(size);
 	chunk->zone->used += size - old_size;
 	return (getSmallChunkData(chunk));
 }
