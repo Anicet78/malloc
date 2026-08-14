@@ -93,11 +93,10 @@ void	free(void* ptr) {
 		return ;
 
 	t_zone*		zone = (t_zone *)(*(uint64_t *)(ptr - 8));
-	uint64_t	size = getSize(*(uint64_t *)(ptr - ALIGNMENT));
 
-	if (size <= MALLOC_TINY_SIZE_LIMIT && zone->size < MALLOC_SMALL_ZONE_SIZE)
+	if (zone->page_size == TINY)
 		freeTiny(ptr - align(sizeof(t_tinychunk)));
-	else if (size <= MALLOC_SMALL_SIZE_LIMIT && zone->size == calcPageSize(align(sizeof(t_zone) + MALLOC_SMALL_ZONE_SIZE)) - align(sizeof(t_zone)))
+	else if (zone->page_size == SMALL)
 		freeSmall(ptr - align(sizeof(t_smallchunk)));
 	else
 		freeLarge(ptr - align(sizeof(t_largechunk)));

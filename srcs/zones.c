@@ -1,7 +1,7 @@
 #include "malloc.h"
 
 inline void*	getFirstChunk(t_zone* zone) {
-	return ((void *)align((uint64_t)zone + sizeof(t_zone)));
+	return ((uint64_t)zone + (void *)align(sizeof(t_zone)));
 }
 
 inline void*	getZoneEnd(t_zone* zone) {
@@ -21,27 +21,29 @@ void	insertZone(t_zone* zone_ptr, t_zone** zone_list) {
 		*zone_list = zone_ptr;
 		zone_ptr->previous = zone_ptr;
 		zone_ptr->next = NULL;
+		return ;
 	}
-	else if (zone_ptr < *zone_list) {
+
+	if (zone_ptr < *zone_list) {
 		zone_ptr->next = *zone_list;
 		zone_ptr->previous = (*zone_list)->previous;
 		(*zone_list)->previous = zone_ptr;
 		*zone_list = zone_ptr;
+		return ;
 	}
-	else {
-		t_zone* zoneEmplacement = lowerBound(zone_ptr, *zone_list);
-		zone_ptr->next = zoneEmplacement->next;
-		zone_ptr->previous = zoneEmplacement;
-		if (zoneEmplacement->next)
-			zoneEmplacement->next->previous = zone_ptr;
-		else
-			(*zone_list)->previous = zone_ptr;
-		zoneEmplacement->next = zone_ptr;
-	}
+
+	t_zone* zoneEmplacement = lowerBound(zone_ptr, *zone_list);
+	zone_ptr->next = zoneEmplacement->next;
+	zone_ptr->previous = zoneEmplacement;
+	if (zoneEmplacement->next)
+		zoneEmplacement->next->previous = zone_ptr;
+	else
+		(*zone_list)->previous = zone_ptr;
+	zoneEmplacement->next = zone_ptr;
 }
 
 t_zone*	tinyZone(uint64_t* zone_size) {
-	*zone_size = calcPageSize(align(sizeof(t_zone) + MALLOC_TINY_ZONE_SIZE));
+	*zone_size = calcPageSize(align(sizeof(t_zone)) + MALLOC_TINY_ZONE_SIZE);
 
 	t_zone*	zone_ptr = newRawPage(*zone_size);
 	if (!zone_ptr)
@@ -51,19 +53,21 @@ t_zone*	tinyZone(uint64_t* zone_size) {
 
 	t_tinychunk*	chunk = getFirstChunk(zone_ptr);
 	t_tinychunk*	zone_limit = (t_tinychunk *)((uint64_t)zone_ptr + (*zone_size));
-	uint64_t		chunk_size = align(sizeof(t_tinychunk) + MALLOC_TINY_SIZE_LIMIT);
-	*zone_size -= (uint64_t)chunk - (uint64_t)zone_ptr;
+	uint64_t		chunk_size = align(sizeof(t_tinychunk)) + MALLOC_TINY_SIZE_LIMIT;
+	*zone_size -= ((uint64_t)chunk - (uint64_t)zone_ptr);
 
 	while (chunk < zone_limit) {
 		chunk->size = packVariables(0, false);
 		chunk = (t_tinychunk *)((uint64_t)chunk + chunk_size);
 	}
 
+	zone_ptr->page_size = TINY;
+
 	return (zone_ptr);
 }
 
 t_zone*	smallZone(uint64_t* zone_size) {
-	*zone_size = calcPageSize(align(sizeof(t_zone) + MALLOC_SMALL_ZONE_SIZE));
+	*zone_size = calcPageSize(align(sizeof(t_zone)) + MALLOC_SMALL_ZONE_SIZE);
 
 	t_zone*	zone_ptr = newRawPage(*zone_size);
 	if (!zone_ptr)
@@ -78,12 +82,16 @@ t_zone*	smallZone(uint64_t* zone_size) {
 	chunk->zone = zone_ptr;
 
 	*zone_size -= (uint64_t)chunk - (uint64_t)zone_ptr;
+	zone_ptr->page_size = SMALL;
 
 	return (zone_ptr);
 }
 
 t_zone*	largeZone(size_t size, uint64_t* zone_size) {
-	*zone_size = calcPageSize(align(sizeof(t_zone) + sizeof(t_largechunk) + size));
+	*zone_size = calcPageSize(align(sizeof(t_zone)) + align(sizeof(t_largechunk)) + size);
+
+	if (*zone_size < size)
+		return (NULL);
 
 	t_zone*	zone_ptr = newRawPage(*zone_size);
 	if (!zone_ptr)
@@ -95,7 +103,8 @@ t_zone*	largeZone(size_t size, uint64_t* zone_size) {
 	chunk->size = setSize(chunk->size, size);
 	chunk->zone = zone_ptr;
 
-	*zone_size -= (uint64_t)chunk - (uint64_t)zone_ptr;
+	*zone_size -= ((uint64_t)chunk - (uint64_t)zone_ptr);
+	zone_ptr->page_size = LARGE;
 
 	return (zone_ptr);
 }

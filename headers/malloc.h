@@ -6,7 +6,7 @@
 # include <sys/mman.h>
 # include <stdalign.h>
 
-# define MALLOC_REQUIRED_SIZE sysconf(_SC_PAGESIZE)
+# define MALLOC_PAGE_SIZE sysconf(_SC_PAGESIZE)
 # define ALIGNMENT alignof(max_align_t)
 
 # define MALLOC_TINY_SIZE_LIMIT  64
@@ -14,6 +14,12 @@
 
 # define MALLOC_SMALL_SIZE_LIMIT 16384
 # define MALLOC_SMALL_ZONE_SIZE  65536
+
+typedef enum page_size {
+	TINY,
+	SMALL,
+	LARGE
+}	t_page_size;
 
 typedef struct s_zone	t_zone;
 struct s_zone
@@ -24,6 +30,7 @@ struct s_zone
 	uint64_t	reserved;
 	uint64_t	used;
 	uint64_t	amount;
+	t_page_size	page_size;
 };
 
 typedef struct s_tinychunk	t_tinychunk;
@@ -77,14 +84,14 @@ uint64_t		packVariables(uint64_t size, bool allocated);
 uint64_t		setAllocated(uint64_t size, bool allocated);
 uint64_t		setSize(uint64_t size, uint64_t value);
 void*			getTinyChunkData(t_tinychunk* chunk);
-void*			claimTinyChunk(t_zone* zone, t_tinychunk* chunk, size_t size);
-t_tinychunk*	findTinySpace(size_t size, t_zone** zone);
-t_tinychunk*	findTinySpaceInZone(size_t size, t_zone* zone);
 void*			getSmallChunkData(t_smallchunk* chunk);
-void*			claimSmallChunk(t_zone* zone, t_smallchunk* chunk, size_t size);
-t_smallchunk*	findSmallSpace(size_t size, t_zone** zone);
-t_smallchunk*	findSmallSpaceInZone(size_t size, t_zone* zone);
 void*			getLargeChunkData(t_largechunk* chunk);
+t_tinychunk*	findTinySpaceInZone(size_t size, t_zone* zone);
+t_tinychunk*	findTinySpace(size_t size, t_zone** zone);
+t_smallchunk*	findSmallSpaceInZone(size_t size, t_zone* zone);
+t_smallchunk*	findSmallSpace(size_t size, t_zone** zone);
+void*			claimTinyChunk(t_zone* zone, t_tinychunk* chunk, size_t size);
+void*			claimSmallChunk(t_zone* zone, t_smallchunk* chunk, size_t size);
 void*			claimLargeChunk(t_zone* zone, t_largechunk* chunk, size_t size);
 
 void	*malloc(size_t size);

@@ -5,14 +5,9 @@ inline size_t align(size_t size) {
 }
 
 size_t	calcPageSize(size_t size) {
-	size_t page_size = sysconf(_SC_PAGESIZE);
-	size_t final_size;
+	const bool		not_divisible = size % MALLOC_PAGE_SIZE != 0;
+	const size_t	final_size = (size / MALLOC_PAGE_SIZE + not_divisible) * MALLOC_PAGE_SIZE;
 
-	if (size == 0)
-		return (page_size);
-	final_size = (size / page_size + (size % page_size != 0)) * page_size;
-	if (final_size < size)
-		return (0);
 	return (align(final_size));
 }
 
