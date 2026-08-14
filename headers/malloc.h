@@ -66,7 +66,9 @@ size_t	align(size_t size);
 size_t	calcPageSize(size_t size);
 
 // Zone
-t_zone*	newZone(size_t size);
+t_zone*			newZone(size_t size);
+void*			getFirstChunk(t_zone* zone);
+void*			getZoneEnd(t_zone* zone);
 
 // Chunk
 bool			isAllocated(uint64_t size);
@@ -74,7 +76,6 @@ uint64_t		getSize(uint64_t size);
 uint64_t		packVariables(uint64_t size, bool allocated);
 uint64_t		setAllocated(uint64_t size, bool allocated);
 uint64_t		setSize(uint64_t size, uint64_t value);
-void*			getFirstChunk(t_zone* zone);
 void*			getTinyChunkData(t_tinychunk* chunk);
 void*			claimTinyChunk(t_zone* zone, t_tinychunk* chunk, size_t size);
 t_tinychunk*	findTinySpace(size_t size, t_zone** zone);

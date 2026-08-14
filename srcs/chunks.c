@@ -1,9 +1,5 @@
 #include <malloc.h>
 
-inline void*	getFirstChunk(t_zone* zone) {
-	return ((void *)align((uint64_t)zone + sizeof(t_zone)));
-}
-
 inline bool	isAllocated(uint64_t size) {
 	return (size & 1);
 }
@@ -32,7 +28,7 @@ void*	claimTinyChunk(t_zone* zone, t_tinychunk* chunk, size_t size) {
 	chunk->size = packVariables(size, true);
 	chunk->zone = zone;
 
-	zone->reserved += align(sizeof(t_tinychunk) + MALLOC_TINY_SIZE_LIMIT);
+	zone->reserved += align(sizeof(t_tinychunk)) + MALLOC_TINY_SIZE_LIMIT;
 	zone->used += size;
 	zone->amount++;
 
@@ -40,15 +36,15 @@ void*	claimTinyChunk(t_zone* zone, t_tinychunk* chunk, size_t size) {
 }
 
 t_tinychunk*	findTinySpaceInZone(size_t size, t_zone* zone) {
-	if (zone->reserved + align(sizeof(t_tinychunk) + size) > zone->size)
+	if (zone->reserved + align(sizeof(t_tinychunk)) + size > zone->size)
 		return (NULL);
 
 	t_tinychunk*	current_chunk = getFirstChunk(zone);
 	t_tinychunk*	zone_limit = (void *)(current_chunk) + zone->size;
-	uint64_t		chunk_size = align(sizeof(t_tinychunk) + MALLOC_TINY_SIZE_LIMIT);
+	uint64_t		chunk_size = align(sizeof(t_tinychunk)) + MALLOC_TINY_SIZE_LIMIT;
 
 	while (current_chunk < zone_limit && isAllocated(current_chunk->size)) {
-		current_chunk = (t_tinychunk *)((uint64_t)current_chunk + chunk_size);
+		current_chunk += chunk_size;
 	}
 
 	if (current_chunk < zone_limit)
@@ -86,7 +82,7 @@ void	fragmentSmallChunk(t_zone* zone, t_smallchunk* chunk, uint64_t full_size) {
 	t_smallchunk*	new_chunk = (void *)((uint64_t)chunk + (uint64_t)full_size);
 
 	if (isAllocated(next_chunk->size)) {
-		if ((uint64_t)next_chunk - (uint64_t)new_chunk < align(sizeof(t_smallchunk)) + align(MALLOC_TINY_SIZE_LIMIT) + 1) {
+		if ((uint64_t)next_chunk - (uint64_t)new_chunk < align(sizeof(t_smallchunk)) + MALLOC_TINY_SIZE_LIMIT + 1) {
 			return ;
 		}
 
@@ -124,7 +120,7 @@ void*	claimSmallChunk(t_zone* zone, t_smallchunk* chunk, size_t size) {
 }
 
 t_smallchunk*	findSmallSpaceInZone(size_t size, t_zone* zone) {
-	if (zone->reserved + align(sizeof(t_smallchunk) + size) > zone->size)
+	if (zone->reserved + align(sizeof(t_smallchunk)) + size > zone->size)
 		return (NULL);
 
 	t_smallchunk* current_chunk = getFirstChunk(zone);
@@ -136,11 +132,11 @@ t_smallchunk*	findSmallSpaceInZone(size_t size, t_zone* zone) {
 					return (current_chunk);
 				}
 			}
-			else if ((uint64_t)(getFirstChunk(zone) + zone->size) - (uint64_t)getSmallChunkData(current_chunk) >= size){
+			else if ((uint64_t)getZoneEnd(zone) - (uint64_t)getSmallChunkData(current_chunk) >= size){
 				return (current_chunk);
 			}
 		}
-		else if (!current_chunk->next && (uint64_t)getFirstChunk(zone) + zone->size >= (uint64_t)getSmallChunkData(current_chunk) + align(getSize(current_chunk->size)) + align(sizeof(t_smallchunk)) + size) {
+		else if (!current_chunk->next && (uint64_t)getZoneEnd(zone) - (uint64_t)getSmallChunkData(current_chunk) >= align(getSize(current_chunk->size)) + align(sizeof(t_smallchunk)) + size) {
 			t_smallchunk* new_chunk = getSmallChunkData(current_chunk) + align(getSize(current_chunk->size));
 
 			current_chunk->next = new_chunk;

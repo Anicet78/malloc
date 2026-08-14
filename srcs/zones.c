@@ -1,5 +1,13 @@
 #include "malloc.h"
 
+inline void*	getFirstChunk(t_zone* zone) {
+	return ((void *)align((uint64_t)zone + sizeof(t_zone)));
+}
+
+inline void*	getZoneEnd(t_zone* zone) {
+	return (getFirstChunk(zone) + zone->size);
+}
+
 t_zone*	lowerBound(t_zone* zone_ptr, t_zone* zone_list) {
 	while (zone_list->next && zone_list->next < zone_ptr) {
 		zone_list = zone_list->next;
