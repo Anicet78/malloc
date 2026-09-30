@@ -11,8 +11,8 @@ int main(void) {
 	test[0] = 'A';
 	test[15] = 'B';
 	test2[15] = 'C';
-	// free(test);
-	// free(test2);
+	free(test);
+	free(test2);
 	show_alloc_mem();
 	return 0;
 }

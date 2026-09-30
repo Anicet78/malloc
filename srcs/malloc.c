@@ -2,8 +2,7 @@
 
 t_allocator malloc_singleton;
 
-void*	tinyAlloc(size_t size)
-{
+void*	tinyAlloc(size_t size) {
 	t_zone*			zone;
 	t_tinychunk*	chunk = findTinySpace(size, &zone);
 
