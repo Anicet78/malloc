@@ -10,7 +10,7 @@
 # define ALIGNMENT alignof(max_align_t)
 
 # define MALLOC_TINY_SIZE_LIMIT  64
-# define MALLOC_TINY_ZONE_SIZE   32768
+# define MALLOC_TINY_ZONE_SIZE   8192
 
 # define MALLOC_SMALL_SIZE_LIMIT 16384
 # define MALLOC_SMALL_ZONE_SIZE  65536
@@ -67,25 +67,72 @@ typedef struct s_allocator
 
 extern t_allocator malloc_singleton;
 
+
 // Page
 void*	newRawPage(size_t size);
-size_t	align(size_t size);
 size_t	calcPageSize(size_t size);
+
+static inline __attribute__((always_inline))
+size_t align(size_t size) {
+	return (size + (ALIGNMENT - 1)) & ~(ALIGNMENT - 1);
+}
+
 
 // Zone
 t_zone*			newZone(size_t size);
-void*			getFirstChunk(t_zone* zone);
-void*			getZoneEnd(t_zone* zone);
+
+static inline __attribute__((always_inline))
+void*	getFirstChunk(t_zone* zone) {
+	return ((uint64_t)zone + (void *)align(sizeof(t_zone)));
+}
+
+static inline __attribute__((always_inline))
+void*	getZoneEnd(t_zone* zone) {
+	return (getFirstChunk(zone) + zone->size);
+}
+
 
 // Chunk
-bool			isAllocated(uint64_t size);
-uint64_t		getSize(uint64_t size);
-uint64_t		packVariables(uint64_t size, bool allocated);
-uint64_t		setAllocated(uint64_t size, bool allocated);
-uint64_t		setSize(uint64_t size, uint64_t value);
-void*			getTinyChunkData(t_tinychunk* chunk);
-void*			getSmallChunkData(t_smallchunk* chunk);
-void*			getLargeChunkData(t_largechunk* chunk);
+static inline __attribute__((always_inline))
+bool	isAllocated(uint64_t size) {
+	return (size & 1);
+}
+
+static inline __attribute__((always_inline))
+uint64_t	getSize(uint64_t size) {
+	return (size >> 1);
+}
+
+static inline __attribute__((always_inline))
+uint64_t	packVariables(uint64_t size, bool allocated) {
+	return (size << 1) | (allocated & 1);
+}
+
+static inline __attribute__((always_inline))
+uint64_t	setAllocated(uint64_t size, bool allocated) {
+	return (size & ~1) | (allocated & 1);
+}
+
+static inline __attribute__((always_inline))
+uint64_t	setSize(uint64_t size, uint64_t value) {
+	return (size & 1) | (value << 1);
+}
+
+static inline __attribute__((always_inline))
+void*	getTinyChunkData(t_tinychunk* chunk) {
+	return ((void *)((uint64_t)chunk + align(sizeof(t_tinychunk))));
+};
+
+static inline __attribute__((always_inline))
+void*	getSmallChunkData(t_smallchunk* chunk) {
+	return ((void *)((uint64_t)chunk + align(sizeof(t_smallchunk))));
+}
+
+static inline __attribute__((always_inline))
+void*	getLargeChunkData(t_largechunk* chunk) {
+	return ((void *)((uint64_t)chunk + align(sizeof(t_largechunk))));
+}
+
 t_tinychunk*	findTinySpaceInZone(size_t size, t_zone* zone);
 t_tinychunk*	findTinySpace(size_t size, t_zone** zone);
 t_smallchunk*	findSmallSpaceInZone(size_t size, t_zone* zone);
@@ -94,10 +141,12 @@ void*			claimTinyChunk(t_zone* zone, t_tinychunk* chunk, size_t size);
 void*			claimSmallChunk(t_zone* zone, t_smallchunk* chunk, size_t size);
 void*			claimLargeChunk(t_zone* zone, t_largechunk* chunk, size_t size);
 
+
 void	*malloc(size_t size);
 void	*calloc(size_t nmemb, size_t size);
 void	*realloc(void *ptr, size_t size);
 void	free(void* ptr);
+
 
 void	show_alloc_mem();
 void	show_alloc_mem_ex();

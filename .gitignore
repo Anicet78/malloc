@@ -3,6 +3,7 @@
 
 # Objects
 objs
+tests
 
 # Libs
 *.a
@@ -11,3 +12,8 @@ objs
 # Binaries
 test_bin
 a.out
+
+# Valgrind
+.config
+.local
+*.out.*

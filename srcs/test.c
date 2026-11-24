@@ -1,6 +1,7 @@
 #include "malloc.h"
 #include "libft.h"
 #include <sys/time.h>
+#include <bsd/stdlib.h>
 
 long	get_time(struct timeval *timestamp)
 {

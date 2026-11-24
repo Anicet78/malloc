@@ -1,8 +1,4 @@
-#include <malloc.h>
-
-inline size_t align(size_t size) {
-	return (size + (ALIGNMENT - 1)) & ~(ALIGNMENT - 1);
-}
+#include "malloc.h"
 
 size_t	calcPageSize(size_t size) {
 	const bool		not_divisible = size % MALLOC_PAGE_SIZE != 0;

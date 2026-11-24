@@ -13,8 +13,9 @@ CFLAGS		+= -I$(HEADERS)
 SRC			= calloc.c chunks.c free.c malloc.c pages.c realloc.c show_ex.c show.c zones.c
 OBJ			= $(patsubst %.c, $(OBJ_DIR)/%.o, $(SRC))
 
-TEST_SRC	= test2.c
-TEST_OBJ	= $(patsubst %.c, $(OBJ_DIR)/%.o, $(TEST_SRC))
+TEST_DIR	= tests
+TEST_SRC	= test.c
+TEST_OBJ	= $(patsubst %.c, $(TEST_DIR)/%.o, $(TEST_SRC))
 TEST_NAME	= test_bin
 
 ifeq (${HOSTTYPE},)
@@ -36,16 +37,21 @@ $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
 	@mkdir -p $(dir $@)
 	$(CC) $(CFLAGS) -c $< -o $@
 
+$(TEST_DIR)/%.o: $(SRC_DIR)/%.c
+	@mkdir -p $(dir $@)
+	$(CC) $(CFLAGS) -O0 -c $< -o $@
+
 test: $(TEST_NAME)
 	@./$(TEST_NAME)
 
 $(TEST_NAME): $(LIBFT) $(NAME) $(TEST_OBJ)
-	$(CC) $(CFLAGS) $(TEST_OBJ) $(LIBFT) -L. -lft_malloc_${HOSTTYPE} -Wl,-rpath,. -ggdb -o test_bin
+	$(CC) $(CFLAGS) $(TEST_OBJ) $(LIBFT) -lbsd -L. -lft_malloc_${HOSTTYPE} -Wl,-rpath,. -ggdb -o test_bin
 
 clean:
 	@printf "\e[1;36mCleaning files\e[0m\n"
 	@make clean -sC $(LIBFT_DIR)
 	@rm -rf $(OBJ_DIR)
+	@rm -rf $(TEST_DIR)
 
 fclean: clean
 	@make fclean -sC $(LIBFT_DIR)

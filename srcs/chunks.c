@@ -1,36 +1,4 @@
-#include <malloc.h>
-
-inline bool	isAllocated(uint64_t size) {
-	return (size & 1);
-}
-
-inline uint64_t	getSize(uint64_t size) {
-	return (size >> 1);
-}
-
-inline uint64_t	packVariables(uint64_t size, bool allocated) {
-	return (size << 1) | (allocated & 1);
-}
-
-inline uint64_t	setAllocated(uint64_t size, bool allocated) {
-	return (size & ~1) | (allocated & 1);
-}
-
-inline uint64_t	setSize(uint64_t size, uint64_t value) {
-	return (size & 1) | (value << 1);
-}
-
-inline void*	getTinyChunkData(t_tinychunk* chunk) {
-	return ((void *)((uint64_t)chunk + align(sizeof(t_tinychunk))));
-}
-
-inline void*	getSmallChunkData(t_smallchunk* chunk) {
-	return ((void *)((uint64_t)chunk + align(sizeof(t_smallchunk))));
-}
-
-inline void*	getLargeChunkData(t_largechunk* chunk) {
-	return ((void *)((uint64_t)chunk + align(sizeof(t_largechunk))));
-}
+#include "malloc.h"
 
 t_tinychunk*	findTinySpaceInZone(size_t size, t_zone* zone) {
 	if (zone->reserved + align(sizeof(t_tinychunk)) + size > zone->size)

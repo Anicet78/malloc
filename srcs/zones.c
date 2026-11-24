@@ -1,13 +1,5 @@
 #include "malloc.h"
 
-inline void*	getFirstChunk(t_zone* zone) {
-	return ((uint64_t)zone + (void *)align(sizeof(t_zone)));
-}
-
-inline void*	getZoneEnd(t_zone* zone) {
-	return (getFirstChunk(zone) + zone->size);
-}
-
 t_zone*	lowerBound(t_zone* zone_ptr, t_zone* zone_list) {
 	while (zone_list->next && zone_list->next < zone_ptr) {
 		zone_list = zone_list->next;
@@ -32,14 +24,18 @@ void	insertZone(t_zone* zone_ptr, t_zone** zone_list) {
 		return ;
 	}
 
-	t_zone* zoneEmplacement = lowerBound(zone_ptr, *zone_list);
+	zone_ptr->previous = (*zone_list)->previous;
+	(*zone_list)->previous = zone_ptr;
+	(*zone_list)->previous->next = zone_ptr;
+	zone_ptr->next = NULL;
+	/* t_zone* zoneEmplacement = lowerBound(zone_ptr, *zone_list);
 	zone_ptr->next = zoneEmplacement->next;
 	zone_ptr->previous = zoneEmplacement;
 	if (zoneEmplacement->next)
 		zoneEmplacement->next->previous = zone_ptr;
 	else
 		(*zone_list)->previous = zone_ptr;
-	zoneEmplacement->next = zone_ptr;
+	zoneEmplacement->next = zone_ptr; */
 }
 
 t_zone*	tinyZone(uint64_t* zone_size) {

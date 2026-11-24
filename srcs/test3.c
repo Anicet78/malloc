@@ -1,5 +1,5 @@
 #include <stdlib.h>
-#include <malloc.h>
+#include "malloc.h"
 
 int main(void) {
 	void* test = malloc(500);
